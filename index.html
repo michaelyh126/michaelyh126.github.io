@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hao Yang — Geospatial, WebGIS &amp; Full-Stack Systems Engineer</title>
+    <meta
+      name="description"
+      content="Hao Yang — Geospatial & Full-Stack Systems Engineer specializing in interactive WebGIS platforms (OpenLayers, GeoTIFF), real-time time-series telemetry (TimescaleDB, FastAPI), commercial SaaS, and AI engineering. Available for remote contracts."
+    />
+    <meta property="og:title" content="Hao Yang — Geospatial, WebGIS & Full-Stack Systems Engineer" />
+    <meta
+      property="og:description"
+      content="Interactive WebGIS studios, multi-source telemetry platforms, production SaaS with automated Playwright video QA, and IEEE SMC 2026 computer vision research."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          const saved = localStorage.getItem('portfolio-theme');
+          if (saved === 'light') {
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-obsidian-950 dark:text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
