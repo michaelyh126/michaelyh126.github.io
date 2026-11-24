@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import {
   ArrowUpRight,
   CheckCircle2,
+  ExternalLink,
   FolderGit2,
   Layers,
-  Lock,
   Play,
+  Sparkles,
   X,
 } from 'lucide-react';
 import {
@@ -13,6 +14,7 @@ import {
   PROJECTS,
   type ProjectCaseStudy,
   type ProjectCategory,
+  type ProjectLaunchLink,
 } from '../data/projects';
 import type { DemoId } from '../demos/registry';
 
@@ -45,6 +47,19 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
     };
   }, [selectedProject]);
 
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    link: ProjectLaunchLink,
+    closeModal = false
+  ) => {
+    e.stopPropagation();
+    if (link.sandboxId) {
+      e.preventDefault();
+      if (closeModal) setSelectedProject(null);
+      onLaunchDemo(link.sandboxId);
+    }
+  };
+
   return (
     <section
       id="projects"
@@ -56,15 +71,15 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               <FolderGit2 className="h-3.5 w-3.5" />
-              <span>6 Interactive Live Sandboxes · 100% Synthetic Demo Data</span>
+              <span>9 Original Production Frontends Live · 100% Synthetic Data</span>
             </div>
             <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              Flagship Case Studies &amp; Live Demos
+              Flagship Case Studies &amp; Live Apps
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-              Every project below launches a full-viewport, playable browser app powered by 100%
-              synthetic data—no login required. Click any card to inspect architecture or launch its
-              live sandbox directly.
+              Launch the real compiled production frontends directly in your browser—sanitized with
+              100% synthetic demo data and zero login walls. Click any card to inspect architecture
+              details.
             </p>
           </div>
 
@@ -170,19 +185,32 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
                   )}
                 </div>
 
-                {/* Primary Launch Live Demo + Architecture Inspect Row */}
+                {/* Extra Quick-Launch App Pills (e.g. Salon 4-Terminals, DataHub Admin, SBUPNet) */}
+                {project.extraLinks && project.extraLinks.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {project.extraLinks.map((extra) => (
+                      <a
+                        key={extra.href}
+                        href={extra.href}
+                        onClick={(e) => handleLinkClick(e, extra)}
+                        className="inline-flex items-center gap-1 rounded-md border border-cyan-500/35 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] font-semibold text-cyan-700 transition hover:bg-cyan-600 hover:text-white dark:text-cyan-300 dark:hover:bg-cyan-500 dark:hover:text-slate-950"
+                      >
+                        <span>{extra.label}</span>
+                        <ArrowUpRight className="h-3 w-3" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* Primary Launch App + Architecture Inspect Row */}
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-200/80 pt-3.5 dark:border-slate-800">
                   <a
-                    href={project.demoRoute}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onLaunchDemo(project.demoId);
-                    }}
+                    href={project.primaryLink.href}
+                    onClick={(e) => handleLinkClick(e, project.primaryLink)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white shadow-sm transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
                   >
                     <Play className="h-3 w-3 fill-current" />
-                    <span>Launch Live Demo</span>
+                    <span>{project.primaryLink.label}</span>
                   </a>
 
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 transition group-hover:text-cyan-700 dark:text-slate-300 dark:group-hover:text-cyan-300">
@@ -216,8 +244,8 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
                   <span className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-cyan-700 dark:text-cyan-300">
                     {selectedProject.badge}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-md border border-slate-300/80 bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-medium text-slate-600 dark:border-slate-700 dark:bg-obsidian-900 dark:text-slate-300">
-                    <Lock className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
+                    <Sparkles className="h-3 w-3" />
                     {selectedProject.repoStatus}
                   </span>
                 </div>
@@ -317,28 +345,35 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
               </div>
             </div>
 
-            {/* Footer Action Buttons */}
-            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5 dark:border-slate-800">
+            {/* Footer Launch Buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-2.5 border-t border-slate-200 pt-5 dark:border-slate-800">
               <a
-                href={selectedProject.demoRoute}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const id = selectedProject.demoId;
-                  setSelectedProject(null);
-                  onLaunchDemo(id);
-                }}
+                href={selectedProject.primaryLink.href}
+                onClick={(e) => handleLinkClick(e, selectedProject.primaryLink, true)}
                 className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-bold text-white shadow-glow transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
-                <span>{selectedProject.demoLabel} (Live Interactive App)</span>
+                <span>{selectedProject.primaryLink.label}</span>
               </a>
+
+              {selectedProject.extraLinks?.map((extra) => (
+                <a
+                  key={extra.href}
+                  href={extra.href}
+                  onClick={(e) => handleLinkClick(e, extra, true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3.5 py-2.5 text-xs font-bold text-cyan-700 transition hover:bg-cyan-600 hover:text-white dark:text-cyan-300 dark:hover:bg-cyan-500 dark:hover:text-slate-950"
+                >
+                  <span>{extra.label}</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ))}
 
               <a
                 href="#contact"
                 onClick={() => setSelectedProject(null)}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-500 hover:text-cyan-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-cyan-400 dark:hover:text-cyan-300"
               >
-                <span>Request Private Code Walkthrough</span>
+                <span>Request Code Walkthrough</span>
               </a>
             </div>
           </div>

@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>水文大数据实时共享聚合平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #050d1a;
+    --bg-mid:       #080f1e;
+    --panel:        rgba(6, 18, 42, 0.82);
+    --panel-border: rgba(30, 111, 255, 0.22);
+    --blue:         #1e6fff;
+    --blue-light:   #4fc3f7;
+    --glow:         #00b4ff;
+    --teal:         #00d4c8;
+    --text:         #e8f4ff;
+    --muted:        #7eb8d4;
+    --success:      #00d68f;
+    --warning:      #ffb800;
+    --danger:       #ff4d6a;
+    --orange:       #ff9a3c;
+    /* Station type colors */
+    --airport:      #ff9a3c;
+    --met:          #4fc3f7;
+    --tide-us:      #00d4c8;
+    --tide-jp:      #ff6b9d;
+    --tide-hk:      #a78bfa;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans SC", -apple-system, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ════════ LAYOUT ════════ */
+  .screen {
+    display: flex;
+    flex-direction: column;
+    width: 100vw; height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: rgba(5, 13, 26, 0.92);
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+  }
+
+  /* Subtle top line glow */
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--blue) 30%, var(--teal) 70%, transparent 100%);
+    opacity: 0.7;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px rgba(0,180,255,0.5)); }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: linear-gradient(90deg, #e8f4ff 0%, #4fc3f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header-subtitle {
+    font-family: "Orbitron", sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    display: block;
+    margin-top: 1px;
+  }
+
+  .header-center {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .hstat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .hstat-val {
+    font-family: "Orbitron", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--teal);
+    line-height: 1;
+  }
+
+  .hstat-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .hstat-divider { width: 1px; height: 28px; background: var(--panel-border); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  /* Status indicator */
+  .status-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(0, 214, 143, 0.08);
+    border: 1px solid rgba(0, 214, 143, 0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--success);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  .status-chip.offline {
+    background: rgba(255, 77, 106, 0.08);
+    border-color: rgba(255, 77, 106, 0.3);
+    color: var(--danger);
+  }
+
+  .status-chip.offline .pulse-dot {
+    background: var(--danger);
+    box-shadow: 0 0 6px var(--danger);
+  }
+
+  .pulse-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+
+  .time-display {
+    font-family: "Orbitron", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.08em;
+  }
+
+  .time-date {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* 2D/3D Switch */
+  .map-switch {
+    display: flex;
+    background: rgba(14, 30, 60, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 11px;
+  }
+
+  .map-switch-btn {
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    color: var(--muted);
+    background: none;
+    border: none;
+    font-family: "Orbitron", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .map-switch-btn.active { background: var(--blue); color: white; }
+
+  /* ── BODY ── */
+  .body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── PANEL BASE STYLES ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .panel-glow {
+    box-shadow: 0 0 40px rgba(30, 111, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    width: 340px;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(16px);
+    z-index: 10;
+  }
+
+  /* Overview stats */
+  .overview {
+    padding: 16px;
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--blue-light);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--panel-border), transparent);
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .ov-card {
+    background: rgba(14, 30, 60, 0.6);
+    border: 1px solid rgba(30, 111, 255, 0.15);
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ov-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .ov-card-blue::before  { background: var(--blue); }
+  .ov-card-teal::before  { background: var(--teal); }
+  .ov-card-green::before { background: var(--success); }
+  .ov-card-warn::before  { background: var(--warning); }
+
+  .ov-num {
+    font-family: "Orbitron", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .ov-label { font-size: 11px; color: var(--muted); }
+
+  /* Type Legend */
+  .legend {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+
+  .legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .legend-item:hover { background: rgba(255,255,255,0.05); }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Station List */
+  .station-list-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .station-list-wrap::-webkit-scrollbar { width: 4px; }
+  .station-list-wrap::-webkit-scrollbar-track { background: transparent; }
+  .station-list-wrap::-webkit-scrollbar-thumb { background: rgba(30,111,255,0.3); border-radius: 2px; }
+
+  .estuary-group { border-bottom: 1px solid rgba(30, 111, 255, 0.08); }
+
+  .estuary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: sticky;
+    top: 0;
+    background: rgba(6, 14, 32, 0.95);
+    z-index: 5;
+  }
+
+  .estuary-header:hover { background: rgba(30, 111, 255, 0.08); }
+
+  .estuary-left { display: flex; align-items: center; gap: 9px; }
+
+  .estuary-indicator {
+    width: 3px; height: 20px;
+    border-radius: 2px;
+    background: var(--blue);
+    flex-shrink: 0;
+  }
+
+  .estuary-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .estuary-en {
+    font-size: 9px;
+    color: var(--muted);
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 0.1em;
+    margin-top: 1px;
+  }
+
+  .estuary-count {
+    font-family: "Orbitron", sans-serif;
+    font-size: 11px;
+    color: var(--blue-light);
+    background: rgba(30, 111, 255, 0.12);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .chevron {
+    color: var(--muted);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+
+  .estuary-group.open .chevron { transform: rotate(90deg); }
+
+  .station-items { display: none; }
+  .estuary-group.open .station-items { display: block; }
+
+  .station-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 16px 9px 28px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .station-item:hover { background: rgba(30, 111, 255, 0.06); border-left-color: var(--blue); }
+  .station-item.active { background: rgba(30, 111, 255, 0.1); border-left-color: var(--blue); }
+
+  .stn-type-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .stn-info { flex: 1; min-width: 0; }
+
+  .stn-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stn-meta {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .stn-status {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .stn-status.online  { background: rgba(0,214,143,0.12); color: var(--success); }
+  .stn-status.maint   { background: rgba(255,184,0,0.12); color: var(--warning); }
+  .stn-status.degraded{ background: rgba(255,184,0,0.12); color: var(--warning); }
+  .stn-status.down     { background: rgba(255,77,106,0.12); color: var(--danger); }
+  .stn-status.unknown  { background: rgba(126,184,212,0.12); color: var(--muted); }
+
+  /* Generic degraded-state message (empty data / connection lost) */
+  .state-msg {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .state-msg.error { color: var(--danger); }
+
+  /* ── MAP CENTER ── */
+  .map-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #map { width: 100%; height: 100%; }
+
+  /* Map overlay frame */
+  .map-frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 500;
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: var(--blue);
+    border-style: solid;
+    opacity: 0.6;
+  }
+
+  .corner-tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+  .corner-tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+  .corner-bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+  .corner-br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+  /* Map controls override */
+  .leaflet-control-zoom { display: none !important; }
+
+  .leaflet-popup-content-wrapper {
+    background: rgba(6, 18, 42, 0.95) !important;
+    border: 1px solid var(--panel-border) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(30,111,255,0.2) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(12px);
+    color: var(--text) !important;
+  }
+
+  .leaflet-popup-tip { background: rgba(6, 18, 42, 0.95) !important; }
+
+  /* Map coordinate display */
+  .map-coords {
+    position: absolute;
+    bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(6, 18, 42, 0.75);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    z-index: 501;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    display: flex;
+    gap: 16px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .sidebar-right {
+    width: 340px;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(16px);
+    z-index: 10;
+  }
+
+  /* Station detail header */
+  .detail-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+
+  .detail-station-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .detail-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .detail-type {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(79, 195, 247, 0.12);
+    color: var(--blue-light);
+  }
+
+  .detail-coord {
+    font-family: "Orbitron", sans-serif;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* Chart area */
+  .chart-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 6px;
+    flex-shrink: 0;
+  }
+
+  .chart-title {
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .chart-time-range {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .time-btn {
+    font-family: "Orbitron", sans-serif;
+    font-size: 8px;
+    padding: 3px 7px;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .time-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+  #chart-main { flex: 1; min-height: 0; }
+
+  /* Latest values */
+  .latest-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+
+  .val-item {
+    background: rgba(14, 30, 60, 0.5);
+    border: 1px solid rgba(30, 111, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .val-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .val-num {
+    font-family: "Orbitron", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .val-unit { font-size: 10px; color: var(--muted); margin-left: 2px; }
+  .val-delta { font-size: 10px; margin-top: 3px; }
+  .delta-up { color: var(--success); }
+  .delta-dn { color: var(--danger); }
+
+  /* Carousel nav */
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+    border-top: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    background: rgba(14, 30, 60, 0.6);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: all 0.15s;
+    font-size: 12px;
+  }
+
+  .nav-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  .nav-dots { display: flex; gap: 5px; max-width: 220px; overflow-x: auto; padding: 4px 0; }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    min-width: 6px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--panel-border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-dot.active { background: var(--blue); width: 18px; border-radius: 3px; }
+
+  /* Update ticker */
+  .update-ticker {
+    padding: 8px 16px;
+    border-top: 1px solid var(--panel-border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .ticker-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 8px;
+    color: var(--blue-light);
+    letter-spacing: 0.2em;
+    flex-shrink: 0;
+  }
+
+  .ticker-track {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .ticker-inner {
+    display: inline-flex;
+    gap: 40px;
+    animation: ticker-scroll 22s linear infinite;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── CUSTOM MARKERS ── */
+  .custom-marker {
+    position: relative;
+    width: 20px; height: 20px;
+  }
+
+  /* Leaflet attribution hide */
+  .leaflet-control-attribution { display: none !important; }
+
+  /* Popup */
+  .popup-content { font-family: "Noto Sans SC", sans-serif; min-width: 200px; }
+  .popup-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--panel-border); }
+  .popup-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+  .popup-key { color: var(--muted); }
+  .popup-val { color: var(--text); font-weight: 500; }
+  .popup-val.online { color: var(--success); }
+  .popup-val.maint  { color: var(--warning); }
+  .estuary-preview { min-width: 270px; max-width: 330px; }
+  .preview-station { padding: 6px 0; border-bottom: 1px solid var(--panel-border); }
+  .preview-station:last-child { border-bottom: 0; }
+  .preview-name { color: var(--text); font-size: 11px; font-weight: 700; }
+  .preview-value { color: var(--teal); font-size: 12px; font-weight: 700; }
+  .preview-meta { color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    transition: opacity 0.6s;
+  }
+
+  .loading-logo svg { width: 80px; height: 80px; filter: drop-shadow(0 0 20px rgba(0,180,255,0.6)); animation: spin-slow 6s linear infinite; }
+
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: "Orbitron", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--blue-light);
+    animation: pulse-text 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-text {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .loading-bar {
+    width: 200px; height: 2px;
+    background: rgba(30, 111, 255, 0.2);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    border-radius: 1px;
+    animation: load-progress 1.8s ease-in-out forwards;
+  }
+
+  @keyframes load-progress {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">
+    <svg viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="36" stroke="#1e6fff" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.5"/>
+      <ellipse cx="40" cy="40" rx="18" ry="30" stroke="#4fc3f7" stroke-width="1.5" opacity="0.8"/>
+      <line x1="8" y1="40" x2="72" y2="40" stroke="#4fc3f7" stroke-width="1.5" opacity="0.8"/>
+      <path d="M12 48 Q24 42 36 48 Q48 54 60 48 Q68 44 72 48" stroke="#00d4c8" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="40" r="4" fill="#00b4ff"/>
+    </svg>
+  </div>
+  <div class="loading-text">INITIALIZING PLATFORM</div>
+  <div class="loading-bar"><div class="loading-progress"></div></div>
+</div>
+
+<!-- Main Screen -->
+<div class="screen">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="16" stroke="#1e6fff" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+          <ellipse cx="18" cy="18" rx="8" ry="14" stroke="#4fc3f7" stroke-width="1.2" opacity="0.8"/>
+          <line x1="4" y1="18" x2="32" y2="18" stroke="#4fc3f7" stroke-width="1.2" opacity="0.8"/>
+          <path d="M5 22 Q11 18 17 22 Q23 26 29 22 Q33 20 35 22" stroke="#00d4c8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="2" fill="#00b4ff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">水文大数据实时共享聚合平台</div>
+        <span class="header-subtitle">Hydrological Big Data Real-time Sharing Platform</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="hstat">
+        <div class="hstat-val" id="h-total">--</div>
+        <div class="hstat-lbl">接入站点</div>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <div class="hstat-val" id="h-online" style="color: var(--success);">--</div>
+        <div class="hstat-lbl">在线站点</div>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <div class="hstat-val" id="h-estuaries">--</div>
+        <div class="hstat-lbl">典型河口</div>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <div class="hstat-val" style="color: var(--orange);" id="h-sources">--</div>
+        <div class="hstat-lbl">数据来源</div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="map-switch" id="range-switch" title="全局时间范围">
+        <button class="map-switch-btn" data-range="24h">24H</button>
+        <button class="map-switch-btn" data-range="7d">7D</button>
+        <button class="map-switch-btn" data-range="14d">14D</button>
+        <button class="map-switch-btn" data-range="30d">30D</button>
+      </div>
+      <div class="map-switch" id="refresh-switch" title="自动刷新">
+        <button class="map-switch-btn" data-refresh="0">关</button>
+        <button class="map-switch-btn" data-refresh="30000">30s</button>
+        <button class="map-switch-btn" data-refresh="60000">1m</button>
+        <button class="map-switch-btn" data-refresh="300000">5m</button>
+      </div>
+      <div class="map-switch" id="view-switch">
+        <button class="map-switch-btn active" onclick="setView('2d',this)">2D</button>
+        <button class="map-switch-btn" onclick="setView('3d',this)">3D</button>
+      </div>
+      <div class="status-chip" id="status-chip"><div class="pulse-dot" id="status-dot"></div><span id="status-text">连接中...</span></div>
+      <div>
+        <div class="time-display" id="clock">00:00:00</div>
+        <div class="time-date" id="date-display">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="body">
+
+    <!-- ── LEFT SIDEBAR ── -->
+    <div class="sidebar-left">
+
+      <!-- Overview Stats -->
+      <div class="overview">
+        <div class="section-label">总体分布</div>
+        <div class="overview-grid">
+          <div class="ov-card ov-card-blue">
+            <div class="ov-num" id="ov-estuaries">--</div>
+            <div class="ov-label">典型河口</div>
+          </div>
+          <div class="ov-card ov-card-teal">
+            <div class="ov-num" id="ov-types">--</div>
+            <div class="ov-label">站点类型</div>
+          </div>
+          <div class="ov-card ov-card-green">
+            <div class="ov-num" id="ov-online">--</div>
+            <div class="ov-label">在线站点</div>
+          </div>
+          <div class="ov-card ov-card-warn">
+            <div class="ov-num" id="ov-offline">--</div>
+            <div class="ov-label">非在线站点</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Type Legend -->
+      <div class="legend">
+        <div class="section-label">站点类型</div>
+        <div class="legend-row">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--airport)"></div>机场气象站</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--met)"></div>国际气象站</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--tide-us)"></div>美国潮位站</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--tide-jp)"></div>日本潮位站</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--tide-hk)"></div>香港潮位站</div>
+        </div>
+      </div>
+
+      <!-- Station List -->
+      <div class="section-label" style="padding: 10px 16px 0; flex-shrink:0">站点分布</div>
+      <div class="station-list-wrap" id="station-list"></div>
+    </div>
+
+    <!-- ── MAP ── -->
+    <div class="map-area">
+      <div id="map"></div>
+      <div class="map-frame">
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+      </div>
+      <div class="map-coords" id="map-coords">
+        <span>LAT: 0.0000°</span>
+        <span>LNG: 0.0000°</span>
+        <span>ZOOM: 2</span>
+      </div>
+    </div>
+
+    <!-- ── RIGHT PANEL ── -->
+    <div class="sidebar-right">
+
+      <!-- Station Detail -->
+      <div class="detail-header">
+        <div class="section-label">站点实时数据</div>
+        <div class="detail-station-name" id="detail-name">加载中...</div>
+        <div class="detail-meta">
+          <div class="detail-type" id="detail-type">--</div>
+          <div class="detail-coord" id="detail-coord">--</div>
+        </div>
+      </div>
+
+      <!-- Latest Values -->
+      <div class="latest-values" id="latest-values">
+        <div class="val-item">
+          <div class="val-label" id="label1">--</div>
+          <div class="val-num"><span id="val1">--</span><span class="val-unit" id="unit1"></span></div>
+          <div class="val-delta" id="delta1">--</div>
+        </div>
+        <div class="val-item">
+          <div class="val-label" id="label2">--</div>
+          <div class="val-num"><span id="val2">--</span><span class="val-unit" id="unit2"></span></div>
+          <div class="val-delta" id="delta2">--</div>
+        </div>
+        <div class="val-item">
+          <div class="val-label" id="label3">--</div>
+          <div class="val-num"><span id="val3">--</span><span class="val-unit" id="unit3"></span></div>
+          <div class="val-delta" id="delta3">--</div>
+        </div>
+        <div class="val-item">
+          <div class="val-label">连接状态</div>
+          <div class="val-num" style="font-size:14px;" id="val4">--</div>
+          <div class="val-delta" id="delta4">--</div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title" id="chart-title">选择左侧站点以查看趋势</div>
+          <div class="chart-time-range" id="metric-chip-row"></div>
+        </div>
+        <div id="chart-main"></div>
+      </div>
+
+      <!-- Carousel Navigation -->
+      <div class="carousel-nav">
+        <button class="nav-btn" onclick="carouselPrev()">&#8592;</button>
+        <div class="nav-dots" id="nav-dots"></div>
+        <button class="nav-btn" onclick="carouselNext()">&#8594;</button>
+      </div>
+
+      <!-- Alert Ticker -->
+      <div class="update-ticker">
+        <div class="ticker-label">ALERTS</div>
+        <div class="ticker-track">
+          <div class="ticker-inner" id="ticker">
+            <span>加载告警中...</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- sidebar-right -->
+  </div><!-- body -->
+</div><!-- screen -->
+
+<script src="js/api.js"></script>
+<script>
+if (!HydroAPI.isAuthenticated()) {
+  HydroAPI.redirectToLogin();
+}
+
+// ════════════════════════════════
+//  参考映射表
+//  说明：以下均为「后端枚举值 → 展示文案/图例颜色」的静态映射（类似原有 TYPE_LABELS），
+//  不是业务模拟数据；颜色一律引用 :root 中已定义的 CSS 变量，不新增硬编码色值。
+//  大屏 API 未提供独立的 metrics 元数据接口，METRIC_META 镜像
+//  backend/scripts/seed_metrics.py 的注册内容，仅用于中文名/单位展示。
+// ════════════════════════════════
+const rootEl = document.documentElement;
+function cssVar(name) {
+  return getComputedStyle(rootEl).getPropertyValue(name).trim();
+}
+
+// data_sources.code → 站点类型（对应 CLAUDE.md「站点类型色标」）
+const SOURCE_TYPE = {
+  metar_cn: { key: 'airport', label: '机场气象站' },
+  metar_us: { key: 'airport', label: '机场气象站' },
+  isd:      { key: 'met', label: '国际气象交换站' },
+  coops:    { key: 'tide-us', label: '美国潮位站' },
+  jodc:     { key: 'tide-jp', label: '日本潮位站' },
+  hko:      { key: 'tide-hk', label: '香港潮位站' },
+};
+function typeColor(sourceCode) {
+  const t = SOURCE_TYPE[sourceCode];
+  return t ? cssVar('--' + t.key) : cssVar('--muted');
+}
+function typeLabel(sourceCode) {
+  const t = SOURCE_TYPE[sourceCode];
+  return t ? t.label : (sourceCode || '未知来源');
+}
+
+const CAPABILITY_LABELS = {
+  realtime: '实时监测',
+  daily_batch: '每日批处理',
+  static_meta: '静态元数据',
+};
+
+const CONNECTIVITY_META = {
+  ok:       { label: '在线', cls: 'online' },
+  degraded: { label: '降级', cls: 'degraded' },
+  down:     { label: '离线', cls: 'down' },
+  unknown:  { label: '未知', cls: 'unknown' },
+};
+function connectivityMeta(c) {
+  const m = CONNECTIVITY_META[c] || CONNECTIVITY_META.unknown;
+  return Object.assign({ color: cssVar('--' + (m.cls === 'online' ? 'success' : m.cls === 'down' ? 'danger' : m.cls === 'degraded' ? 'warning' : 'muted')) }, m);
+}
+
+// metric code → 中文名/单位（镜像后端 metrics 注册表，无对应查询接口）
+const METRIC_META = {
+  temp_c:        { label: '气温', unit: '°C' },
+  dewpoint_c:    { label: '露点温度', unit: '°C' },
+  pressure_hpa:  { label: '气压', unit: 'hPa' },
+  wind_speed_ms: { label: '风速', unit: 'm/s' },
+  wind_dir_deg:  { label: '风向', unit: '°' },
+  wind_gust_ms:  { label: '阵风', unit: 'm/s' },
+  visibility_m:  { label: '能见度', unit: 'm' },
+  precip_mm:     { label: '降水量', unit: 'mm' },
+  rh_pct:        { label: '相对湿度', unit: '%' },
+  water_level_m: { label: '水位', unit: 'm' },
+  water_temp_c:  { label: '水温', unit: '°C' },
+  salinity_psu:  { label: '盐度', unit: 'psu' },
+  cloud_base_m:  { label: '云高', unit: 'm' },
+};
+function metricLabel(code) { return (METRIC_META[code] && METRIC_META[code].label) || code; }
+function metricUnit(code) { return (METRIC_META[code] && METRIC_META[code].unit) || ''; }
+
+// 河口配色：循环引用既有 CSS 变量，不新增色值
+const ESTUARY_PALETTE = ['--blue', '--teal', '--orange', '--blue-light', '--success', '--danger'].map(cssVar);
+
+// 全局时间范围 → 请求参数：短区间走 raw，长区间前端主动请求 1h（服务端仍会对 >31 天的 raw 强制升级兜底）
+const RANGE_CONFIG = {
+  '24h': { hours: 24, interval: 'raw', label: '近24小时' },
+  '7d':  { days: 7,  interval: '1h',  label: '近7天' },
+  '14d': { days: 14, interval: '1h',  label: '近14天' },
+  '30d': { days: 30, interval: '1h',  label: '近30天' },
+};
+
+const CARD_SLOTS = 3; // 卡片1-3 优先展示当前范围内有数值的指标，卡片4固定展示连接状态
+const STATION_PAGE_SIZE = 200; // 服务端分页硬上限（size<=200）
+
+// ════════════════════════════════
+//  全局状态
+// ════════════════════════════════
+const state = {
+  estuaries: [],                 // EstuaryOut[]
+  stations: new Map(),           // stationId -> { station, estuaryId }
+  stationsByEstuary: new Map(),  // estuaryId -> stationId[]
+  markers: new Map(),            // stationId -> L.Marker
+  selectedStationId: null,
+  selectedEstuaryId: null,
+  selectedMetric: null,
+  range: '7d',
+  refreshMs: 0,
+  stopRefreshPoll: null,
+  previewByEstuary: new Map(),   // estuaryId -> StationPreviewOut[]
+  carouselOrder: [],             // 有数据河口 ID[]，用于轮播
+  carouselIdx: 0,
+  previewRequestId: 0,
+  panelRequestId: 0,
+  popupToken: 0,
+  hasPreviewResult: false,
+  previewError: false,
+};
+
+// ════════════════════════════════
+//  小工具
+// ════════════════════════════════
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[ch]);
+}
+
+function fmtNum(n, digits) {
+  if (n === null || n === undefined || Number.isNaN(n)) return '--';
+  return digits === undefined ? String(n) : n.toFixed(digits);
+}
+
+function fmtInt(n) {
+  if (n === null || n === undefined || Number.isNaN(n)) return '--';
+  return n.toLocaleString('zh-CN');
+}
+
+function fmtTimeLabel(iso, interval) {
+  const d = new Date(iso);
+  if (interval === 'raw') {
+    return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' +
+      d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' + d.getHours() + '时';
+}
+
+function hexToRgb(hex) {
+  if (!hex || hex.charAt(0) !== '#') return '126,184,212';
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `${r},${g},${b}`;
+}
+
+function computeRange(rangeKey) {
+  const cfg = RANGE_CONFIG[rangeKey] || RANGE_CONFIG['24h'];
+  const end = new Date();
+  const start = new Date(end);
+  if (cfg.hours) start.setHours(start.getHours() - cfg.hours);
+  if (cfg.days) start.setDate(start.getDate() - cfg.days);
+  return { start: start.toISOString(), end: end.toISOString(), interval: cfg.interval, label: cfg.label };
+}
+
+// ════════════════════════════════
+//  CLOCK
+// ════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  setText('clock', now.toTimeString().slice(0, 8));
+  setText('date-display', now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ════════════════════════════════
+//  系统连接状态指示（顶部 status-chip）
+// ════════════════════════════════
+function setSystemStatus(ok, message) {
+  const chip = document.getElementById('status-chip');
+  const text = document.getElementById('status-text');
+  if (!chip || !text) return;
+  chip.classList.toggle('offline', !ok);
+  text.textContent = message;
+}
+
+// ════════════════════════════════
+//  MAP INIT
+// ════════════════════════════════
+let map;
+function initMap() {
+  map = L.map('map', {
+    center: [20, 10],
+    zoom: 2,
+    zoomControl: false,
+    attributionControl: false,
+  });
+
+  // Esri World Dark Gray zero-key basemap
+  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16,
+    crossOrigin: true,
+  }).addTo(map);
+
+  map.on('mousemove', e => {
+    document.getElementById('map-coords').innerHTML =
+      `<span>LAT: ${e.latlng.lat.toFixed(4)}°</span><span>LNG: ${e.latlng.lng.toFixed(4)}°</span><span>ZOOM: ${Math.round(map.getZoom())}</span>`;
+  });
+
+  setTimeout(() => {
+    map.flyTo([20, 10], 2, { duration: 1.5 });
+  }, 2200);
+}
+
+// 河口边界圈 + 站点 Marker：从 state 中的真实数据渲染（河口/站点数据变化时可重复调用）
+function renderMapContent() {
+  state.markers.forEach(m => map.removeLayer(m));
+  state.markers.clear();
+  (map.__estuaryLayers || []).forEach(l => map.removeLayer(l));
+  map.__estuaryLayers = [];
+
+  state.estuaries.forEach((est, i) => {
+    const color = ESTUARY_PALETTE[i % ESTUARY_PALETTE.length];
+    const radiusMeters = (est.box_deg || 3) * 111000; // 度 -> 米粗略换算，真实反映各河口 box_deg
+    const circle = L.circle([est.center_lat, est.center_lng], {
+      radius: radiusMeters,
+      color, fillColor: color, fillOpacity: 0.04,
+      weight: 1, dashArray: '5 5', opacity: 0.35,
+    }).addTo(map);
+    map.__estuaryLayers.push(circle);
+
+    (state.stationsByEstuary.get(est.id) || []).forEach(stationId => {
+      const entry = state.stations.get(stationId);
+      if (entry && entry.station.lat != null && entry.station.lng != null) {
+        addMarker(entry.station, est);
+      }
+    });
+  });
+}
+
+function addMarker(stn, est) {
+  const color = typeColor(stn.source_code);
+  const rgb = hexToRgb(color);
+
+  const markerHtml = `
+    <div style="width:12px;height:12px;border-radius:50%;background:${color};
+      box-shadow:0 0 0 3px rgba(${rgb},0.25), 0 0 8px rgba(${rgb},0.6); position:relative;">
+      <div style="position:absolute; inset:-4px; border-radius:50%;
+        border:1px solid rgba(${rgb},0.4); animation: pulse-ring 2.5s ease-out infinite;"></div>
+    </div>`;
+
+  const icon = L.divIcon({ html: markerHtml, className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
+  const marker = L.marker([stn.lat, stn.lng], { icon }).addTo(map);
+  const conn = connectivityMeta(stn.connectivity);
+
+  marker.bindPopup(`
+    <div class="popup-content">
+      <div class="popup-title">${stn.name}</div>
+      <div class="popup-row"><span class="popup-key">类型</span><span class="popup-val">${typeLabel(stn.source_code)}</span></div>
+      <div class="popup-row"><span class="popup-key">坐标</span><span class="popup-val">${stn.lat.toFixed(4)}°N, ${stn.lng.toFixed(4)}°E</span></div>
+      <div class="popup-row"><span class="popup-key">指标</span><span class="popup-val">${(stn.metrics || []).map(metricLabel).join('、') || '--'}</span></div>
+      <div class="popup-row"><span class="popup-key">监测方式</span><span class="popup-val">${CAPABILITY_LABELS[stn.capability] || stn.capability}</span></div>
+      <div class="popup-row"><span class="popup-key">河口</span><span class="popup-val">${est.name_cn}</span></div>
+      <div class="popup-row"><span class="popup-key">连接状态</span><span class="popup-val" style="color:${conn.color}">${conn.label}</span></div>
+    </div>
+  `, { maxWidth: 260 });
+
+  marker.on('click', () => selectStation(stn.id, { estuaryId: est.id, marker }));
+  state.markers.set(`${est.id}:${stn.id}`, marker);
+}
+
+// ════════════════════════════════
+//  MAP VIEW SWITCH（2D/3D，作用域限定在 #view-switch，避免与新增的全局时间/刷新按钮组冲突）
+// ════════════════════════════════
+function setView(mode, btn) {
+  document.querySelectorAll('#view-switch .map-switch-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (mode === '3d') {
+    map.flyTo([25, 10], 2.5, { duration: 1 });
+  } else {
+    map.flyTo([20, 10], 2, { duration: 1 });
+  }
+}
+
+// ════════════════════════════════
+//  左侧栏：河口 → 站点 列表（三级联动的第一、二级）
+// ════════════════════════════════
+function renderStationList() {
+  const container = document.getElementById('station-list');
+  const visibleEstuaries = state.estuaries.filter(est => state.carouselOrder.includes(est.id));
+  if (!visibleEstuaries.length) {
+    container.innerHTML = '<div class="state-msg">当前时间范围暂无有效河口数据</div>';
+    return;
+  }
+  container.innerHTML = visibleEstuaries.map((est, i) => {
+    const stationIds = state.stationsByEstuary.get(est.id) || [];
+    const color = ESTUARY_PALETTE[i % ESTUARY_PALETTE.length];
+    return `
+      <div class="estuary-group ${i === 0 ? 'open' : ''}" id="eg-${est.id}">
+        <div class="estuary-header" onclick="toggleGroup(${est.id})">
+          <div class="estuary-left">
+            <div class="estuary-indicator" style="background:${color}"></div>
+            <div>
+              <div class="estuary-name">${est.name_cn}</div>
+              <div class="estuary-en">${(est.name_en || '').toUpperCase()}</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <div class="estuary-count">${stationIds.length}</div>
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <path d="M6 4l4 4-4 4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="station-items">
+          ${stationIds.length ? stationIds.map(id => renderStationItem(id, est.id)).join('') : '<div class="state-msg">该河口暂无接入站点</div>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderStationItem(stationId, estuaryId) {
+  const entry = state.stations.get(stationId);
+  if (!entry) return '';
+  const stn = entry.station;
+  const conn = connectivityMeta(stn.connectivity);
+  const active = stationId === state.selectedStationId && estuaryId === state.selectedEstuaryId ? 'active' : '';
+  return `
+    <div class="station-item ${active}" data-station-id="${stationId}" data-estuary-id="${estuaryId}" onclick="selectStation('${stationId}', { estuaryId: ${estuaryId} })">
+      <div class="stn-type-dot" style="background:${typeColor(stn.source_code)}"></div>
+      <div class="stn-info">
+        <div class="stn-name">${stn.name}</div>
+        <div class="stn-meta">
+          <span>${(stn.metrics || []).slice(0, 3).map(metricLabel).join('、') || '无指标'}</span>
+        </div>
+      </div>
+      <div class="stn-status ${conn.cls}">${conn.label}</div>
+    </div>
+  `;
+}
+
+function toggleGroup(estuaryId) {
+  const el = document.getElementById('eg-' + estuaryId);
+  if (el) el.classList.toggle('open');
+  const est = state.estuaries.find(e => e.id === estuaryId);
+  const idx = state.carouselOrder.indexOf(estuaryId);
+  if (idx >= 0 && el?.classList.contains('open')) {
+    carouselGoto(idx);
+  } else if (est && map) {
+    map.flyTo([est.center_lat, est.center_lng], 5, { duration: 1.2 });
+  }
+}
+
+// ════════════════════════════════
+//  右侧栏：站点详情 / 指标筛选（三级联动的第三级）/ 图表 / 最新值
+// ════════════════════════════════
+function selectStation(stationId, options = {}) {
+  const entry = state.stations.get(stationId);
+  if (!entry) return;
+  state.selectedStationId = stationId;
+  state.selectedEstuaryId = options.estuaryId || entry.estuaryId;
+  state.selectedMetric = options.metric || (entry.station.metrics && entry.station.metrics[0]) || null;
+
+  document.querySelectorAll('.station-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.stationId === stationId && Number(el.dataset.estuaryId) === state.selectedEstuaryId);
+  });
+
+  const idx = state.carouselOrder.indexOf(state.selectedEstuaryId);
+  if (idx >= 0) {
+    state.carouselIdx = idx;
+    updateNavDots();
+  }
+
+  if (options.focusMap !== false && map && entry.station.lat != null && entry.station.lng != null) {
+    map.flyTo([entry.station.lat, entry.station.lng], 8, { duration: 1.5 });
+    const marker = options.marker || state.markers.get(`${state.selectedEstuaryId}:${stationId}`);
+    if (marker) marker.openPopup();
+  }
+
+  renderStationDetailHeader();
+  renderMetricChips();
+  refreshStationPanel();
+}
+
+function renderStationDetailHeader() {
+  const entry = state.stations.get(state.selectedStationId);
+  if (!entry) return;
+  const stn = entry.station;
+  const est = state.estuaries.find(e => e.id === state.selectedEstuaryId);
+  setText('detail-name', stn.name + (est ? ` — ${est.name_cn}` : ''));
+  setText('detail-type', `${typeLabel(stn.source_code)} · ${CAPABILITY_LABELS[stn.capability] || stn.capability}`);
+  setText('detail-coord', stn.lat != null ? `${stn.lat.toFixed(2)}°N / ${stn.lng.toFixed(2)}°E` : '坐标未知');
+}
+
+function renderMetricChips() {
+  const entry = state.stations.get(state.selectedStationId);
+  const row = document.getElementById('metric-chip-row');
+  if (!entry || !entry.station.metrics || !entry.station.metrics.length) {
+    row.innerHTML = '';
+    return;
+  }
+  row.innerHTML = entry.station.metrics.map(code => `
+    <button class="time-btn ${code === state.selectedMetric ? 'active' : ''}" onclick="setFocusMetric('${code}')">${metricLabel(code)}</button>
+  `).join('');
+}
+
+function setFocusMetric(code) {
+  state.selectedMetric = code;
+  renderMetricChips();
+  refreshStationPanel();
+}
+
+async function refreshStationPanel() {
+  const entry = state.stations.get(state.selectedStationId);
+  if (!entry) return;
+  const requestId = ++state.panelRequestId;
+  const stn = entry.station;
+  const range = computeRange(state.range);
+
+  setText('chart-title', `${range.label}趋势 · ${state.selectedMetric ? metricLabel(state.selectedMetric) : '无指标'}`);
+  renderConnectivityCard(stn);
+
+  if (!stn.metrics || !stn.metrics.length) {
+    renderCardsEmpty();
+    renderChartEmpty('该站点未配置可展示指标');
+    return;
+  }
+
+  const metricsToFetch = Array.from(new Set([...stn.metrics, state.selectedMetric].filter(Boolean)));
+
+  let series;
+  try {
+    series = await HydroAPI.get(`/stations/${encodeURIComponent(stn.id)}/observations`, {
+      metrics: metricsToFetch.join(','),
+      start: range.start,
+      end: range.end,
+      interval: range.interval,
+    });
+    if (requestId !== state.panelRequestId) return;
+    setSystemStatus(!state.previewError, state.previewError ? '河口数据更新失败' : '系统运行中');
+  } catch (err) {
+    if (requestId !== state.panelRequestId) return;
+    console.error(err);
+    setSystemStatus(false, err.isNetworkError ? '连接中断' : '数据获取失败');
+    renderCardsError();
+    renderChartError(err.isNetworkError ? '连接中断，请稍后重试' : ('数据获取失败：' + err.message));
+    return;
+  }
+
+  const byMetric = new Map(series.map(s => [s.metric, s]));
+  const cardMetrics = Array.from(new Set([state.selectedMetric, ...stn.metrics].filter(Boolean))).filter(code =>
+    (byMetric.get(code)?.points || []).some(point => typeof point[1] === 'number' && Number.isFinite(point[1]))
+  ).slice(0, CARD_SLOTS);
+  cardMetrics.forEach((code, i) => renderValueCard(i + 1, code, byMetric.get(code)));
+  for (let i = cardMetrics.length; i < CARD_SLOTS; i++) renderValueCardMissing(i + 1);
+
+  renderChart(byMetric.get(state.selectedMetric), range);
+}
+
+function renderValueCard(slot, code, series) {
+  setText(`label${slot}`, metricLabel(code));
+  const points = ((series && series.points) || []).filter(point =>
+    typeof point[1] === 'number' && Number.isFinite(point[1])
+  );
+  const last = points.length ? points[points.length - 1] : null;
+  const prev = points.length > 1 ? points[points.length - 2] : null;
+
+  const hasLast = last && last[1] != null;
+  setText(`val${slot}`, hasLast ? fmtNum(last[1], 2) : '--');
+  setText(`unit${slot}`, hasLast ? metricUnit(code) : '');
+
+  const deltaEl = document.getElementById(`delta${slot}`);
+  if (last && prev && last[1] != null && prev[1] != null) {
+    const diff = last[1] - prev[1];
+    deltaEl.className = 'val-delta ' + (diff >= 0 ? 'delta-up' : 'delta-dn');
+    deltaEl.textContent = (diff >= 0 ? '↑ ' : '↓ ') + Math.abs(diff).toFixed(2) + ' 较上一采样点';
+  } else {
+    deltaEl.className = 'val-delta';
+    deltaEl.textContent = points.length ? '暂无对比数据' : '暂无数据';
+  }
+}
+
+function renderValueCardMissing(slot) {
+  setText(`label${slot}`, '暂无数据');
+  setText(`val${slot}`, '--');
+  setText(`unit${slot}`, '');
+  const deltaEl = document.getElementById(`delta${slot}`);
+  deltaEl.className = 'val-delta';
+  deltaEl.textContent = '--';
+}
+
+function renderCardsEmpty() {
+  for (let i = 1; i <= CARD_SLOTS; i++) renderValueCardMissing(i);
+}
+
+function renderCardsError() {
+  for (let i = 1; i <= CARD_SLOTS; i++) {
+    setText(`label${i}`, '连接中断');
+    setText(`val${i}`, '--');
+    setText(`unit${i}`, '');
+    const deltaEl = document.getElementById(`delta${i}`);
+    deltaEl.className = 'val-delta';
+    deltaEl.textContent = '--';
+  }
+}
+
+function renderConnectivityCard(stn) {
+  const conn = connectivityMeta(stn.connectivity);
+  const valEl = document.getElementById('val4');
+  valEl.textContent = conn.label;
+  valEl.style.color = conn.color;
+  const deltaEl = document.getElementById('delta4');
+  deltaEl.className = 'val-delta';
+  deltaEl.style.color = conn.color;
+  deltaEl.textContent = stn.latest_obs_time
+    ? ('最近数据 ' + new Date(stn.latest_obs_time).toLocaleString('zh-CN'))
+    : '暂无观测记录';
+}
+
+// ── ECharts ──
+function getChart() {
+  return echarts.getInstanceByDom(document.getElementById('chart-main'))
+    || echarts.init(document.getElementById('chart-main'));
+}
+
+function renderChartMessage(message, color) {
+  const chart = getChart();
+  chart.clear();
+  chart.setOption({
+    backgroundColor: 'transparent',
+    graphic: {
+      type: 'text',
+      left: 'center', top: 'middle',
+      style: { text: message, fill: color, fontSize: 12 },
+    },
+  });
+}
+
+function renderChartEmpty(message) { renderChartMessage(message || '暂无数据', cssVar('--muted')); }
+function renderChartError(message) { renderChartMessage(message || '连接中断', cssVar('--danger')); }
+
+function renderChart(series, range) {
+  if (!series || !series.points || !series.points.length) {
+    renderChartEmpty('暂无数据');
+    return;
+  }
+  const chart = getChart();
+  const times = series.points.map(p => fmtTimeLabel(p[0], series.interval));
+  const values = series.points.map(p => (p[1] === null || p[1] === undefined ? null : p[1]));
+  const unit = metricUnit(series.metric);
+
+  chart.setOption({
+    backgroundColor: 'transparent',
+    grid: { top: 14, bottom: 32, left: 48, right: 16 },
+    xAxis: {
+      type: 'category',
+      data: times,
+      axisLine: { lineStyle: { color: 'rgba(78,148,220,0.2)' } },
+      axisTick: { show: false },
+      axisLabel: { color: cssVar('--muted'), fontSize: 9, interval: Math.max(Math.floor(times.length / 6), 0) },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: 'rgba(78,148,220,0.1)', type: 'dashed' } },
+      axisLabel: { color: cssVar('--muted'), fontSize: 9 },
+    },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(6,18,42,0.92)',
+      borderColor: 'rgba(30,111,255,0.3)',
+      textStyle: { color: cssVar('--text'), fontSize: 11 },
+      formatter: params => {
+        const p = params[0];
+        return `${p.name}<br>${metricLabel(series.metric)}: <strong>${p.value == null ? '--' : p.value}${unit}</strong>`;
+      },
+    },
+    series: [{
+      type: 'line',
+      data: values,
+      smooth: 0.3,
+      symbol: 'none',
+      connectNulls: false,
+      lineStyle: { color: cssVar('--blue'), width: 1.5 },
+      areaStyle: {
+        color: {
+          type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(30,111,255,0.3)' },
+            { offset: 1, color: 'rgba(30,111,255,0)' },
+          ],
+        },
+      },
+    }],
+  }, true);
+}
+
+window.addEventListener('resize', () => {
+  if (echarts.getInstanceByDom(document.getElementById('chart-main'))) getChart().resize();
+});
+
+// ════════════════════════════════
+//  轮播导航
+// ════════════════════════════════
+function updateNavDots() {
+  const nav = document.getElementById('nav-dots');
+  nav.innerHTML = state.carouselOrder.map((estuaryId, i) =>
+    `<button class="nav-dot ${i === state.carouselIdx ? 'active' : ''}" onclick="carouselGoto(${i})" title="${escapeHtml(state.estuaries.find(est => est.id === estuaryId)?.name_cn || '')}" aria-label="第 ${i + 1} 个河口"></button>`
+  ).join('');
+}
+
+function previewPopupHtml(est, stations) {
+  return `<div class="popup-content estuary-preview">
+    <div class="popup-title">${escapeHtml(est.name_cn)} · 最新站点数据</div>
+    ${stations.map(row => `<div class="preview-station">
+      <div class="preview-name">${escapeHtml(row.station_name)}</div>
+      <div class="preview-value">${escapeHtml(metricLabel(row.metric))} ${escapeHtml(row.value)} ${escapeHtml(metricUnit(row.metric) || row.unit || '')}</div>
+      <div class="preview-meta">${escapeHtml(new Date(row.time).toLocaleString('zh-CN'))}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function openPreviewPopup(estuaryId) {
+  const est = state.estuaries.find(item => item.id === estuaryId);
+  const stations = state.previewByEstuary.get(estuaryId) || [];
+  if (!est || !stations.length || !map) return;
+  L.popup({ maxWidth: 360, autoPan: false })
+    .setLatLng([est.center_lat, est.center_lng])
+    .setContent(previewPopupHtml(est, stations))
+    .openOn(map);
+}
+
+function carouselGoto(idx, options = {}) {
+  const estuaryId = state.carouselOrder[idx];
+  const est = state.estuaries.find(item => item.id === estuaryId);
+  const first = (state.previewByEstuary.get(estuaryId) || [])[0];
+  if (!est || !first) return;
+  state.carouselIdx = idx;
+  updateNavDots();
+  const groupEl = document.getElementById('eg-' + estuaryId);
+  if (groupEl) groupEl.classList.add('open');
+  selectStation(first.station_id, { estuaryId, metric: first.metric, focusMap: false });
+
+  const token = ++state.popupToken;
+  map.closePopup();
+  if (options.fly === false) {
+    openPreviewPopup(estuaryId);
+    return;
+  }
+  let opened = false;
+  const showAfterFlight = () => {
+    map.off('moveend', showAfterFlight);
+    if (!opened && token === state.popupToken) {
+      opened = true;
+      openPreviewPopup(estuaryId);
+    }
+  };
+  map.on('moveend', showAfterFlight);
+  map.flyTo([est.center_lat, est.center_lng], 5, { duration: 1.2 });
+  setTimeout(showAfterFlight, 1500);
+}
+
+function carouselNext() {
+  const count = state.carouselOrder.length;
+  if (!count) return;
+  carouselGoto((state.carouselIdx + 1) % count);
+}
+
+function carouselPrev() {
+  const count = state.carouselOrder.length;
+  if (!count) return;
+  carouselGoto((state.carouselIdx - 1 + count) % count);
+}
+
+let carouselTimer = null;
+function restartCarouselTimer() {
+  if (carouselTimer) clearInterval(carouselTimer);
+  carouselTimer = state.carouselOrder.length > 1 ? setInterval(carouselNext, 8000) : null;
+}
+
+// ════════════════════════════════
+//  顶部指标卡 /alerts 滚动条
+// ════════════════════════════════
+async function loadSummary() {
+  try {
+    const summary = await HydroAPI.get('/dashboard/summary');
+    setText('h-total', fmtInt(summary.station_count));
+    setText('h-online', fmtInt(summary.online_count));
+    setText('ov-online', fmtInt(summary.online_count));
+    setText('ov-offline', fmtInt(Math.max(summary.station_enabled_count - summary.online_count, 0)));
+    return summary;
+  } catch (err) {
+    console.error(err);
+    ['h-total', 'h-online', 'ov-online', 'ov-offline'].forEach(id => setText(id, '--'));
+    setSystemStatus(false, err.isNetworkError ? '连接中断' : '数据获取失败');
+    return null;
+  }
+}
+
+async function loadAlertsTicker() {
+  const ticker = document.getElementById('ticker');
+  try {
+    const page = await HydroAPI.get('/alerts', { active: true, size: 30 });
+    if (!page.items.length) {
+      ticker.innerHTML = '<span>暂无告警，系统运行正常</span>';
+      return;
+    }
+    const items = page.items.map(a => {
+      const scope = a.scope_id ? `${a.scope_type}:${a.scope_id}` : a.scope_type;
+      return `<span>[${a.severity.toUpperCase()}] ${scope} — ${a.message || '触发告警'}</span>`;
+    });
+    // 复制一份保证与既有 ticker-scroll 循环动画（translateX(-50%)）无缝衔接
+    ticker.innerHTML = items.concat(items).join('');
+  } catch (err) {
+    console.error(err);
+    ticker.innerHTML = '<span>告警数据连接中断</span>';
+  }
+}
+
+// ════════════════════════════════
+//  全局时间选择器 / 自动刷新开关
+// ════════════════════════════════
+function initRangeSwitch() {
+  const group = document.getElementById('range-switch');
+  group.querySelectorAll('.map-switch-btn').forEach(btn => {
+    if (btn.dataset.range === state.range) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.map-switch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.range = btn.dataset.range;
+      ++state.panelRequestId;
+      loadEstuaryPreviews().then(ok => {
+        if (!ok && state.selectedStationId) refreshStationPanel();
+      });
+    });
+  });
+}
+
+function initRefreshSwitch() {
+  const group = document.getElementById('refresh-switch');
+  group.querySelectorAll('.map-switch-btn').forEach(btn => {
+    if (Number(btn.dataset.refresh) === state.refreshMs) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.map-switch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setRefresh(Number(btn.dataset.refresh));
+    });
+  });
+}
+
+function setRefresh(ms) {
+  state.refreshMs = ms;
+  if (state.stopRefreshPoll) {
+    state.stopRefreshPoll();
+    state.stopRefreshPoll = null;
+  }
+  if (ms) {
+    state.stopRefreshPoll = HydroAPI.poll(async () => {
+      await loadSummary();
+      await loadAlertsTicker();
+      const previewsOk = await loadEstuaryPreviews();
+      if (!previewsOk && state.selectedStationId) await refreshStationPanel();
+    }, ms);
+  }
+}
+
+// ════════════════════════════════
+//  引导加载：河口 → 各河口站点列表（一次性拉全量，各河口站点数远小于分页上限）
+// ════════════════════════════════
+function clearCarouselSelection() {
+  ++state.popupToken;
+  ++state.panelRequestId;
+  if (map) map.closePopup();
+  state.selectedStationId = null;
+  state.selectedEstuaryId = null;
+  state.selectedMetric = null;
+  setText('detail-name', '当前时间范围暂无有效河口数据');
+  setText('detail-type', '--');
+  setText('detail-coord', '--');
+  setText('chart-title', '暂无可展示站点');
+  renderCardsEmpty();
+  setText('val4', '--');
+  setText('delta4', '--');
+  renderChartEmpty('暂无站点数据');
+}
+
+function applyEstuaryPreviews(rows) {
+  const previousOrder = state.carouselOrder;
+  const previousId = state.carouselOrder[state.carouselIdx];
+  const previousIndex = state.carouselIdx;
+  state.previewByEstuary = new Map(rows.map(row => [row.estuary_id, row.stations]));
+  state.carouselOrder = state.estuaries
+    .filter(est => (state.previewByEstuary.get(est.id) || []).length > 0)
+    .map(est => est.id);
+  const wasLoaded = state.hasPreviewResult;
+  state.hasPreviewResult = true;
+  setText('h-estuaries', fmtInt(state.carouselOrder.length));
+  setText('ov-estuaries', fmtInt(state.carouselOrder.length));
+  renderStationList();
+
+  if (!state.carouselOrder.length) {
+    state.carouselIdx = 0;
+    updateNavDots();
+    clearCarouselSelection();
+  } else {
+    const retainedIndex = state.carouselOrder.indexOf(previousId);
+    let nextIndex = retainedIndex;
+    if (nextIndex < 0) {
+      for (let offset = 1; offset <= previousOrder.length; offset++) {
+        const candidate = previousOrder[(previousIndex + offset) % previousOrder.length];
+        nextIndex = state.carouselOrder.indexOf(candidate);
+        if (nextIndex >= 0) break;
+      }
+    }
+    if (nextIndex < 0) nextIndex = 0;
+    carouselGoto(nextIndex, { fly: !wasLoaded || retainedIndex < 0 });
+  }
+  restartCarouselTimer();
+}
+
+async function loadEstuaryPreviews() {
+  const requestId = ++state.previewRequestId;
+  const range = computeRange(state.range);
+  try {
+    const rows = await HydroAPI.get('/dashboard/estuary-previews', {
+      start: range.start, end: range.end,
+    });
+    if (requestId !== state.previewRequestId) return false;
+    state.previewError = false;
+    applyEstuaryPreviews(rows);
+    setSystemStatus(true, '系统运行中');
+    return true;
+  } catch (err) {
+    if (requestId !== state.previewRequestId) return false;
+    console.error(err);
+    state.previewError = true;
+    setSystemStatus(false, err.isNetworkError ? '连接中断' : '数据获取失败');
+    const message = state.hasPreviewResult
+      ? '河口数据更新失败，仍显示上次结果'
+      : '河口数据加载失败';
+    const container = document.getElementById('station-list');
+    container.querySelector('#preview-error')?.remove();
+    container.insertAdjacentHTML('afterbegin',
+      `<div class="state-msg error" id="preview-error">${message}：${escapeHtml(err.message || '未知错误')}</div>`);
+    if (!state.hasPreviewResult) renderChartError(message);
+    return false;
+  }
+}
+
+async function fetchAllStationsForEstuary(estuaryId) {
+  let page = 1;
+  let all = [];
+  for (let guard = 0; guard < 20; guard++) { // 安全上限，避免异常数据导致死循环
+    const data = await HydroAPI.get(`/estuaries/${estuaryId}/stations`, { page, size: STATION_PAGE_SIZE });
+    all = all.concat(data.items);
+    if (all.length >= data.total || data.items.length < STATION_PAGE_SIZE) break;
+    page += 1;
+  }
+  return all;
+}
+
+async function bootstrap() {
+  try {
+    state.estuaries = await HydroAPI.get('/estuaries');
+  } catch (err) {
+    console.error(err);
+    setSystemStatus(false, err.isNetworkError ? '连接中断' : '数据获取失败');
+    document.getElementById('station-list').innerHTML =
+      `<div class="state-msg error">河口数据加载失败：${err.isNetworkError ? '连接中断，请检查后端服务' : (err.message || '未知错误')}</div>`;
+    renderChartError('河口数据加载失败');
+    return false;
+  }
+
+  setText('ov-types', fmtInt(new Set(Object.values(SOURCE_TYPE).map(t => t.key)).size));
+
+  const results = await Promise.allSettled(
+    state.estuaries.map(est => fetchAllStationsForEstuary(est.id))
+  );
+  if (results.some(result => result.status === 'rejected')) {
+    setSystemStatus(false, '站点数据获取失败');
+    document.getElementById('station-list').innerHTML =
+      '<div class="state-msg error">站点数据获取失败，请重新加载页面</div>';
+    renderChartError('站点数据获取失败');
+    return false;
+  }
+
+  const sourceCodes = new Set();
+  state.estuaries.forEach((est, i) => {
+    const result = results[i];
+    const stations = result.status === 'fulfilled' ? result.value : [];
+    const ids = [];
+    stations.forEach(stn => {
+      state.stations.set(stn.id, { station: stn, estuaryId: est.id });
+      ids.push(stn.id);
+      if (stn.source_code) sourceCodes.add(stn.source_code);
+    });
+    state.stationsByEstuary.set(est.id, ids);
+  });
+
+  setText('h-sources', fmtInt(sourceCodes.size));
+  renderMapContent();
+  return loadEstuaryPreviews();
+}
+
+// ════════════════════════════════
+//  CSS ANIMATION for markers
+// ════════════════════════════════
+const markerStyle = document.createElement('style');
+markerStyle.textContent = `
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+`;
+document.head.appendChild(markerStyle);
+
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
+window.addEventListener('load', async () => {
+  // 未登录时顶部已触发 HydroAPI.redirectToLogin()，此处避免在跳转完成前继续发起数据请求
+  if (!HydroAPI.isAuthenticated()) return;
+
+  initMap();
+  initRangeSwitch();
+  initRefreshSwitch();
+  setSystemStatus(true, '连接中...');
+
+  const minDelay = new Promise(resolve => setTimeout(resolve, 900));
+  const [settledResults] = await Promise.all([
+    Promise.allSettled([bootstrap(), loadSummary(), loadAlertsTicker()]),
+    minDelay,
+  ]);
+  const [bootResult, summaryResult] = settledResults;
+
+  const bootOk = bootResult.status === 'fulfilled' && bootResult.value;
+  const summaryOk = summaryResult.status === 'fulfilled' && summaryResult.value;
+  setSystemStatus(!!(bootOk && summaryOk), (bootOk && summaryOk) ? '系统运行中' : '部分数据连接中断');
+
+  document.getElementById('loading').classList.add('hidden');
+  setTimeout(() => document.getElementById('loading').remove(), 700);
+});
+</script>
+</body>
+</html>

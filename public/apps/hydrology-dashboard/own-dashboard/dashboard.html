@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水文自有系统 · 数据展示大屏 own-dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">
+    <svg viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="36" stroke="#1e6fff" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.5"/>
+      <ellipse cx="40" cy="40" rx="18" ry="30" stroke="#4fc3f7" stroke-width="1.5" opacity="0.8"/>
+      <line x1="8" y1="40" x2="72" y2="40" stroke="#4fc3f7" stroke-width="1.5" opacity="0.8"/>
+      <path d="M12 48 Q24 42 36 48 Q48 54 60 48 Q68 44 72 48" stroke="#00d4c8" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="40" r="4" fill="#00b4ff"/>
+    </svg>
+  </div>
+  <div class="loading-text">INITIALIZING DASHBOARD</div>
+</div>
+
+<div id="toast-stack"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <img id="lb-img" alt="物候原图">
+  <div class="lb-meta" id="lb-meta"></div>
+  <div class="lb-actions">
+    <button class="lb-btn" id="lb-download">下载原图</button>
+    <button class="lb-btn lb-close" onclick="closeLightbox()">关闭</button>
+  </div>
+</div>
+
+<div class="screen">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="16" stroke="#1e6fff" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+          <ellipse cx="18" cy="18" rx="8" ry="14" stroke="#4fc3f7" stroke-width="1.2" opacity="0.8"/>
+          <line x1="4" y1="18" x2="32" y2="18" stroke="#4fc3f7" stroke-width="1.2" opacity="0.8"/>
+          <path d="M5 22 Q11 18 17 22 Q23 26 29 22 Q33 20 35 22" stroke="#00d4c8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="2" fill="#00b4ff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">水文自有系统 · 数据展示大屏</div>
+        <span class="header-subtitle">OWN-DASHBOARD · FIELD HYDROLOGY VISUALIZATION</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="hstat"><div class="hstat-val" id="h-stations">--</div><div class="hstat-lbl">可见站点</div></div>
+      <div class="hstat-divider"></div>
+      <div class="hstat"><div class="hstat-val" id="h-points">--</div><div class="hstat-lbl">采样点位</div></div>
+      <div class="hstat-divider"></div>
+      <div class="hstat"><div class="hstat-val" style="color:var(--warning)" id="h-alerts">--</div><div class="hstat-lbl">活跃告警</div></div>
+      <div class="hstat-divider"></div>
+      <div class="hstat"><div class="hstat-val small" style="color:var(--muted)" id="h-latest">--</div><div class="hstat-lbl">最近观测(UTC)</div></div>
+    </div>
+
+    <div class="header-right">
+      <div class="status-chip" id="status-chip"><div class="pulse-dot"></div><span id="status-text">连接中...</span></div>
+      <div>
+        <div class="time-display" id="clock">00:00:00</div>
+        <div class="time-date" id="date-display">--</div>
+      </div>
+      <button class="logout-btn" onclick="HydroAPI.logout()">退出</button>
+    </div>
+  </div>
+
+  <!-- BODY GRID -->
+  <div class="body">
+
+    <!-- RAIL -->
+    <div class="panel area-rail rail">
+      <div class="rail-section">
+        <div class="section-label">概览</div>
+        <div class="summary-grid">
+          <div class="sum-card c-blue"><div class="sum-num" id="sum-stations">--</div><div class="sum-lbl">可见站点</div></div>
+          <div class="sum-card c-teal"><div class="sum-num" id="sum-points">--</div><div class="sum-lbl">采样点位</div></div>
+          <div class="sum-card c-green"><div class="sum-num small" id="sum-latest">--</div><div class="sum-lbl">最近观测(UTC)</div></div>
+          <div class="sum-card c-warn"><div class="sum-num" id="sum-alerts">--</div><div class="sum-lbl">活跃告警</div></div>
+        </div>
+      </div>
+
+      <div class="rail-section">
+        <div class="section-label">查询控制</div>
+        <div class="ctrl-field">
+          <label class="ctrl-label">站点 station_id</label>
+          <select class="ctrl-select" id="sel-station"><option value="">加载中…</option></select>
+        </div>
+        <div class="ctrl-field">
+          <label class="ctrl-label">时间窗口（原始区间 ≤ 31 天）</label>
+          <div class="seg" id="seg-window">
+            <button class="seg-btn" data-window="24h">24H</button>
+            <button class="seg-btn active" data-window="7d">7D</button>
+            <button class="seg-btn" data-window="14d">14D</button>
+            <button class="seg-btn" data-window="30d">30D</button>
+          </div>
+        </div>
+        <div class="ctrl-field">
+          <label class="ctrl-label">ADCP 指标 metric</label>
+          <input class="ctrl-input" id="in-adcp-metric" value="adcp_speed" placeholder="adcp_speed">
+        </div>
+        <div class="ctrl-field">
+          <label class="ctrl-label">水质指标 metric</label>
+          <input class="ctrl-input" id="in-wq-metric" value="salinity_psu" placeholder="salinity_psu">
+        </div>
+        <button class="seg-btn active" style="width:100%;border-radius:8px;height:34px;" id="btn-reload">重新加载全部图表</button>
+      </div>
+
+      <div class="rail-section">
+        <div class="section-label">全球叠加图层</div>
+        <div class="toggle-row">
+          <span class="tr-label">全球站点/河口叠加 <small>只读参考</small></span>
+          <label class="switch"><input type="checkbox" id="tg-overlay" checked><span class="slider"></span></label>
+        </div>
+        <div class="overlay-banner ok" id="overlay-banner">只读叠加：不并入本系统观测、不跨基准比较。</div>
+      </div>
+
+      <div class="rail-section">
+        <div class="section-label">图例</div>
+        <div class="legend-row" style="margin-bottom:10px;">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--adcp)"></div>本系统站点</div>
+          <div class="legend-item"><div class="legend-dot hollow"></div>全球叠加站点</div>
+          <div class="legend-item"><div class="legend-dot" style="border:1px dashed var(--muted);background:transparent"></div>河口边界</div>
+        </div>
+        <div class="section-label" style="margin-top:4px;">热力单元语义</div>
+        <div class="legend-row">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>有值(含 0)</div>
+          <div class="legend-item"><div class="legend-dot hollow"></div>有采样·空值(null)</div>
+          <div class="legend-item"><div class="legend-swatch-hatch"></div>缺测/未同步</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="panel area-map">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--blue)"></span>站点分布 · 全球叠加图层</div>
+        <div class="panel-sub" id="map-sub">/dashboard/stations · /overlay/global-stations</div>
+      </div>
+      <div class="panel-body">
+        <div id="map"></div>
+        <div class="map-legend-float">
+          <div class="lg"><span class="d" style="background:var(--adcp)"></span>本系统站点（主图层）</div>
+          <div class="lg"><span class="ring"></span>全球叠加站点（只读）</div>
+        </div>
+        <div class="state-msg hidden" id="state-map"></div>
+      </div>
+    </div>
+
+    <!-- ADCP HEATMAP -->
+    <div class="panel area-adcp">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--adcp)"></span>ADCP 剖面热力（时间×层号）</div>
+        <div class="panel-sub">/obs/profile-grid</div>
+      </div>
+      <div class="note-strip" id="adcp-note"><b>Y 轴=层号</b>（水深门禁默认关，不标实际水深 m）· 缺测层≠0 值 · qc=0=质量未知</div>
+      <div class="panel-body"><div class="chart-canvas" id="chart-adcp"></div><div class="state-msg hidden" id="state-adcp"></div></div>
+    </div>
+
+    <!-- VECTOR FIELD -->
+    <div class="panel area-vector">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--blue-light)"></span>矢量场（U/V 定向 · 流速定色）</div>
+        <div class="panel-sub">/obs/vector-field</div>
+      </div>
+      <div class="note-strip" id="vector-note">流向约定加载中…</div>
+      <div class="panel-body"><div class="chart-canvas" id="chart-vector"></div><div class="state-msg hidden" id="state-vector"></div></div>
+    </div>
+
+    <!-- WAVE ROSE -->
+    <div class="panel area-wave">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--wave)"></span>波浪玫瑰（方向×波高）</div>
+        <div class="panel-sub">/obs/wave-rose</div>
+      </div>
+      <div class="panel-body"><div class="chart-canvas" id="chart-wave"></div><div class="state-msg hidden" id="state-wave"></div></div>
+    </div>
+
+    <!-- WQ PILES -->
+    <div class="panel area-wq">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--wq)"></span>水质多桩号对比</div>
+        <div class="panel-sub">/obs/wq-piles</div>
+      </div>
+      <div class="panel-body"><div class="chart-canvas" id="chart-wq"></div><div class="state-msg hidden" id="state-wq"></div></div>
+    </div>
+
+    <!-- PHENOLOGY -->
+    <div class="panel area-pheno">
+      <div class="panel-head">
+        <div class="panel-title"><span class="tag-dot" style="background:var(--phenology)"></span>物候日历 + 图片画廊</div>
+        <div class="panel-sub">/files/phenology · /files/thumbnail</div>
+      </div>
+      <div class="panel-body">
+        <div class="pheno-wrap">
+          <div class="pheno-cal">
+            <div class="chart-canvas pheno-cal-canvas" id="chart-cal"></div>
+            <div class="state-msg hidden" id="state-cal"></div>
+          </div>
+          <div class="pheno-gallery">
+            <div class="gallery-head">
+              <div class="gallery-title" id="gallery-title">图片画廊 <small>点击左侧日历某日</small></div>
+            </div>
+            <div class="tz-disclaimer" id="tz-disclaimer">时区免责：图片时刻按 UTC+8 处理为 <b>未核准假设</b>（pending R0-B），不作为精确采集时刻依据。</div>
+            <div class="gallery-grid" id="gallery"><div class="state-msg" style="position:static">选择有图日期以查看缩略图</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script>
+// ── HydroAPI 兜底 shim（内核/封装未加载时避免整页脚本崩溃）──
+if (!window.HydroAPI) {
+  window.HydroAPI = {
+    _stub: true,
+    isAuthenticated: () => false, requireAuth: () => false,
+    get: () => Promise.reject(new Error('HydroAPI 未加载')),
+    raw: () => Promise.reject(new Error('HydroAPI 未加载')),
+    logout: () => { window.location.href = 'login.html'; },
+    message: { error: (m) => console.error(m), success: () => {}, warning: () => {}, info: () => {} },
+    base: '(unavailable)',
+  };
+  console.error('[own-dashboard] HydroAPI 未加载：请检查 js/api.js');
+}
+
+// ── Toast（并作为 ElementPlus.ElMessage shim 供 api.js 提示复用）──
+function toast(msg, type) {
+  const stack = document.getElementById('toast-stack');
+  if (!stack || !msg) return;
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'info');
+  el.textContent = msg;
+  stack.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, type === 'error' ? 4200 : 2600);
+}
+window.ElementPlus = { ElMessage: (o) => toast(o && o.message, (o && o.type) || 'info') };
+
+if (!HydroAPI.requireAuth()) {
+  // requireAuth 已触发跳转登录；停止后续初始化
+} else {
+  runDashboard();
+}
+
+function runDashboard() {
+  const cv = HydroCharts.cssVar;
+
+  // ── 站点类型 → 颜色/标签（本系统主图层）──
+  const OWN_TYPE = {
+    adcp:         { c: '--adcp', l: 'ADCP 剖面' },
+    wave:         { c: '--wave', l: '波浪' },
+    wq:           { c: '--wq', l: '水质' },
+    tide:         { c: '--tide-us', l: '潮位' },
+    water_level:  { c: '--tide-us', l: '水位' },
+    multispectral:{ c: '--phenology', l: '多光谱/物候' },
+    phenology:    { c: '--phenology', l: '物候' },
+    met:          { c: '--met', l: '气象' },
+    weather:      { c: '--met', l: '气象' },
+  };
+  function ownColor(t) { const m = OWN_TYPE[t]; return cv(m ? m.c : '--blue-light'); }
+  function ownLabel(t) { const m = OWN_TYPE[t]; return m ? m.l : (t || '未分类'); }
+
+  // ── 时间窗口 ──
+  const WINDOWS = {
+    '24h': { hours: 24, label: '近 24 小时' },
+    '7d':  { days: 7,  label: '近 7 天' },
+    '14d': { days: 14, label: '近 14 天' },
+    '30d': { days: 30, label: '近 30 天' },
+  };
+  function computeRange(key) {
+    const cfg = WINDOWS[key] || WINDOWS['7d'];
+    const end = new Date();
+    const start = new Date(end);
+    if (cfg.hours) start.setHours(start.getHours() - cfg.hours);
+    if (cfg.days) start.setDate(start.getDate() - cfg.days);
+    return { start: start.toISOString(), end: end.toISOString(), label: cfg.label };
+  }
+
+  const state = {
+    stations: [], stationMap: new Map(), station: '',
+    window: '7d', overlayOn: true,
+    map: null, ownLayer: null, overlayLayer: null,
+    thumbObserver: null,
+  };
+
+  // ── 小工具 ──
+  function setText(id, t) { const el = document.getElementById(id); if (el) el.textContent = t; }
+  function fmtInt(n) { return (n === null || n === undefined || Number.isNaN(n)) ? '--' : Number(n).toLocaleString('zh-CN'); }
+  function fmtUtc(iso) { if (!iso) return '--'; const d = new Date(iso); return Number.isNaN(d.getTime()) ? '--' : d.toISOString().slice(5, 16).replace('T', ' '); }
+  function friendlyErr(err) {
+    if (err && err.isNetworkError) return '连接中断，请检查 own-api 服务';
+    if (err && err.status === 413) return '所选时间窗口过大（原始区间上限 31 天），请缩小范围';
+    if (err && err.status === 401) return '登录已过期，请重新登录';
+    if (err && err.status === 403) return '无权限：该站点/时段未在授权范围内';
+    return (err && err.message) || '数据获取失败';
+  }
+  function panelState(id, mode, msg) {
+    const el = document.getElementById(id); if (!el) return;
+    if (mode === 'hide') { el.className = 'state-msg hidden'; el.innerHTML = ''; return; }
+    if (mode === 'loading') { el.className = 'state-msg'; el.innerHTML = '<div class="spinner"></div><div>加载中…</div>'; return; }
+    if (mode === 'error') { el.className = 'state-msg error'; el.innerHTML = '<div class="sm-icon">!</div><div>' + (msg || '数据获取失败') + '</div>'; return; }
+    el.className = 'state-msg'; el.innerHTML = '<div class="sm-icon">◎</div><div>' + (msg || '暂无数据') + '</div>';
+  }
+
+  // ── 系统状态 chip ──
+  function setStatus(ok, msg) {
+    const chip = document.getElementById('status-chip');
+    if (chip) chip.classList.toggle('offline', !ok);
+    setText('status-text', msg);
+  }
+
+  // ── 时钟 ──
+  function clock() {
+    const now = new Date();
+    setText('clock', now.toTimeString().slice(0, 8));
+    setText('date-display', now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
+  }
+  setInterval(clock, 1000); clock();
+
+  // ════════ MAP ════════
+  function initMap() {
+    state.map = L.map('map', { center: [20, 10], zoom: 2, zoomControl: false, attributionControl: false, worldCopyJump: true });
+    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, crossOrigin: true }).addTo(state.map);
+    state.overlayLayer = L.layerGroup().addTo(state.map);
+    state.ownLayer = L.layerGroup().addTo(state.map);
+    setTimeout(() => { try { state.map.invalidateSize(); } catch (e) {} }, 300);
+  }
+
+  function renderOwnMarkers() {
+    if (!state.ownLayer) return;
+    state.ownLayer.clearLayers();
+    const pts = [];
+    state.stations.forEach(s => {
+      if (s.lat == null || s.lng == null) return;
+      const color = ownColor(s.station_type);
+      const html = `<div style="width:12px;height:12px;border-radius:50%;background:${color};box-shadow:0 0 0 3px ${HydroCharts.rgba(color, 0.22)},0 0 8px ${HydroCharts.rgba(color, 0.6)};"></div>`;
+      const marker = L.marker([s.lat, s.lng], { icon: L.divIcon({ html, className: '', iconSize: [12, 12], iconAnchor: [6, 6] }) });
+      marker.bindPopup(
+        `<div class="popup-content"><div class="popup-title">${s.name || s.station_id}</div>` +
+        `<div class="popup-row"><span class="popup-key">类型</span><span class="popup-val">${ownLabel(s.station_type)}</span></div>` +
+        `<div class="popup-row"><span class="popup-key">station_id</span><span class="popup-val">${s.station_id}</span></div>` +
+        `<div class="popup-row"><span class="popup-key">坐标</span><span class="popup-val">${s.lat.toFixed(3)}, ${s.lng.toFixed(3)}</span></div>` +
+        `<div class="popup-row"><span class="popup-key">移动站</span><span class="popup-val">${s.is_mobile ? '是' : '否'}</span></div></div>`,
+        { maxWidth: 260 });
+      marker.on('click', () => selectStation(s.station_id));
+      marker.addTo(state.ownLayer);
+      pts.push([s.lat, s.lng]);
+    });
+    if (pts.length) { try { state.map.fitBounds(pts, { padding: [40, 40], maxZoom: 9 }); } catch (e) {} }
+  }
+
+  async function loadOverlay() {
+    const banner = document.getElementById('overlay-banner');
+    if (!state.overlayLayer) return;
+    state.overlayLayer.clearLayers();
+    let data;
+    try {
+      data = await HydroAPI.get('/overlay/global-stations', { limit: 2000 }, { silentError: true });
+    } catch (err) {
+      banner.className = 'overlay-banner';
+      banner.textContent = '全球叠加数据暂不可用：' + friendlyErr(err) + '（不影响本系统主图层）';
+      return;
+    }
+    // 降级：available:false 时图层灰显/提示，不报错、不阻塞主屏
+    if (!data || data.available === false) {
+      banner.className = 'overlay-banner';
+      banner.textContent = '全球数据暂不可用' + (data && data.reason ? '：' + data.reason : '') + '（叠加图层灰显，只读参考）';
+      return;
+    }
+    banner.className = 'overlay-banner ok';
+    banner.textContent = '只读叠加：不并入本系统观测、不跨基准比较。datum_unknown 站点并列展示、不求差。';
+
+    (data.estuaries || []).forEach(e => {
+      if (e.center_lat == null || e.center_lng == null) return;
+      L.circle([e.center_lat, e.center_lng], {
+        radius: (e.box_deg || 3) * 111000, color: cv('--muted'), fillColor: cv('--muted'),
+        fillOpacity: 0.03, weight: 1, dashArray: '5 5', opacity: 0.35,
+      }).bindPopup(`<div class="popup-content"><div class="popup-title">${e.name_cn || e.code}</div><div class="popup-row"><span class="popup-key">${(e.name_en || '')}</span><span class="popup-badge">只读叠加</span></div></div>`).addTo(state.overlayLayer);
+    });
+    (data.stations || []).forEach(s => {
+      if (s.lat == null || s.lng == null) return;
+      L.circleMarker([s.lat, s.lng], {
+        radius: 2.5, color: cv('--muted'), weight: 1, fill: true, fillColor: cv('--bg-mid'), fillOpacity: 0.4, opacity: 0.55,
+      }).bindPopup(`<div class="popup-content"><div class="popup-title">${s.name || s.id}</div><div class="popup-row"><span class="popup-key">来源</span><span class="popup-val">${s.source || '--'}</span></div><div class="popup-row"><span class="popup-key">类型</span><span class="popup-val">${s.station_type || '--'}</span></div><div class="popup-row"><span class="popup-key"></span><span class="popup-badge">只读叠加</span></div></div>`).addTo(state.overlayLayer);
+    });
+    applyOverlayVisibility();
+  }
+
+  function applyOverlayVisibility() {
+    if (!state.map || !state.overlayLayer) return;
+    if (state.overlayOn) { if (!state.map.hasLayer(state.overlayLayer)) state.map.addLayer(state.overlayLayer); }
+    else { if (state.map.hasLayer(state.overlayLayer)) state.map.removeLayer(state.overlayLayer); }
+  }
+
+  // ════════ SUMMARY / STATIONS ════════
+  async function loadSummary() {
+    try {
+      const s = await HydroAPI.get('/dashboard/summary');
+      setText('h-stations', fmtInt(s.visible_stations)); setText('sum-stations', fmtInt(s.visible_stations));
+      setText('h-points', fmtInt(s.sampling_points)); setText('sum-points', fmtInt(s.sampling_points));
+      setText('h-alerts', fmtInt(s.active_alerts)); setText('sum-alerts', fmtInt(s.active_alerts));
+      setText('h-latest', fmtUtc(s.latest_obs_time)); setText('sum-latest', fmtUtc(s.latest_obs_time));
+      return true;
+    } catch (err) { setStatus(false, friendlyErr(err)); return false; }
+  }
+
+  async function loadStations() {
+    const sel = document.getElementById('sel-station');
+    let data;
+    try { data = await HydroAPI.get('/dashboard/stations'); }
+    catch (err) {
+      sel.innerHTML = '<option value="">加载失败</option>';
+      panelState('state-map', 'error', '站点加载失败：' + friendlyErr(err));
+      return false;
+    }
+    state.stations = (data && data.items) || [];
+    state.stationMap = new Map(state.stations.map(s => [s.station_id, s]));
+    if (!state.stations.length) {
+      sel.innerHTML = '<option value="">无授权站点</option>';
+      panelState('state-map', 'empty', '无授权站点（scope 未授权任何站点）');
+      return true;
+    }
+    sel.innerHTML = state.stations.map(s => `<option value="${s.station_id}">${(s.name || s.station_id)} · ${ownLabel(s.station_type)}</option>`).join('');
+    renderOwnMarkers();
+    state.station = state.stations[0].station_id;
+    sel.value = state.station;
+    return true;
+  }
+
+  // ════════ 六类可视化面板 ════════
+  async function loadAdcp() {
+    if (!state.station) return;
+    const metric = document.getElementById('in-adcp-metric').value.trim() || 'adcp_speed';
+    const r = computeRange(state.window);
+    panelState('state-adcp', 'loading');
+    try {
+      const d = await HydroAPI.get('/obs/profile-grid', { station_id: state.station, metric, start: r.start, end: r.end }, { silentError: true });
+      if (!d || !(d.times || []).length || !(d.layers || []).length) { HydroCharts.clear('chart-adcp'); panelState('state-adcp', 'empty', '该窗口内无剖面网格数据'); return; }
+      const useLayer = (d.depth_axis || 'layer') === 'layer' || !d.adcp_depth_annotation_enabled;
+      setText('adcp-note', ''); // 重建带 html
+      document.getElementById('adcp-note').innerHTML = `<b>Y 轴=${useLayer ? '层号' : '深度'}</b>（水深门禁默认关，不标实际水深 m）· 缺测层≠0 值 · qc=0=质量未知 · ${metric}`;
+      HydroCharts.renderHeatmap('chart-adcp', d);
+      panelState('state-adcp', 'hide');
+    } catch (err) { HydroCharts.clear('chart-adcp'); panelState('state-adcp', 'error', friendlyErr(err)); }
+  }
+
+  async function loadVector() {
+    if (!state.station) return;
+    const r = computeRange(state.window);
+    panelState('state-vector', 'loading');
+    try {
+      const d = await HydroAPI.get('/obs/vector-field', { station_id: state.station, start: r.start, end: r.end }, { silentError: true });
+      setText('vector-note', '流向约定：' + (d && d.dir_convention ? d.dir_convention : 'atan2(U_east,V_north)，罗盘度[0,360)'));
+      if (!d || !(d.points || []).length) { HydroCharts.clear('chart-vector'); panelState('state-vector', 'empty', '该窗口内无 U/V 配对数据'); return; }
+      HydroCharts.renderVector('chart-vector', d);
+      panelState('state-vector', 'hide');
+    } catch (err) { HydroCharts.clear('chart-vector'); panelState('state-vector', 'error', friendlyErr(err)); }
+  }
+
+  async function loadWave() {
+    if (!state.station) return;
+    const r = computeRange(state.window);
+    panelState('state-wave', 'loading');
+    try {
+      const d = await HydroAPI.get('/obs/wave-rose', { station_id: state.station, start: r.start, end: r.end }, { silentError: true });
+      const total = d && (d.total != null ? d.total : (d.freq_matrix || []).reduce((a, row) => a + (row || []).reduce((x, y) => x + (y || 0), 0), 0));
+      if (!d || !(d.dir_bins || []).length || !total) { HydroCharts.clear('chart-wave'); panelState('state-wave', 'empty', '该窗口内无波浪方向/波高样本'); return; }
+      HydroCharts.renderWaveRose('chart-wave', d);
+      panelState('state-wave', 'hide');
+    } catch (err) { HydroCharts.clear('chart-wave'); panelState('state-wave', 'error', friendlyErr(err)); }
+  }
+
+  async function loadWq() {
+    if (!state.station) return;
+    const metric = document.getElementById('in-wq-metric').value.trim() || 'salinity_psu';
+    const r = computeRange(state.window);
+    panelState('state-wq', 'loading');
+    try {
+      const d = await HydroAPI.get('/obs/wq-piles', { station_id: state.station, metric, start: r.start, end: r.end }, { silentError: true });
+      const hasData = d && (d.piles || []).some(p => (p.points || []).length);
+      if (!hasData) { HydroCharts.clear('chart-wq'); panelState('state-wq', 'empty', '该窗口内无水质桩号数据'); return; }
+      HydroCharts.renderWqPiles('chart-wq', d);
+      panelState('state-wq', 'hide');
+    } catch (err) { HydroCharts.clear('chart-wq'); panelState('state-wq', 'error', friendlyErr(err)); }
+  }
+
+  // ── 物候日历 + 画廊 ──
+  async function loadPhenology() {
+    if (!state.station) return;
+    panelState('state-cal', 'loading');
+    try {
+      const d = await HydroAPI.get('/files/phenology', { station_id: state.station, size: 1 }, { silentError: true });
+      const calendar = (d && d.calendar) || [];
+      if (d && d.items && d.items[0] && d.items[0].tz_assumption) {
+        document.getElementById('tz-disclaimer').innerHTML = '时区免责：' + d.items[0].tz_assumption;
+      }
+      if (!calendar.length) {
+        HydroCharts.clear('chart-cal'); panelState('state-cal', 'empty', '该站点无物候图片日历');
+        document.getElementById('gallery').innerHTML = '<div class="state-msg" style="position:static">该站点暂无物候图片</div>';
+        return;
+      }
+      HydroCharts.renderCalendar('chart-cal', calendar, (date) => loadGallery(date));
+      panelState('state-cal', 'hide');
+      // 默认加载最近有图日期
+      const latest = calendar.map(c => c.date).filter(Boolean).sort().pop();
+      if (latest) loadGallery(latest);
+    } catch (err) { HydroCharts.clear('chart-cal'); panelState('state-cal', 'error', friendlyErr(err)); }
+  }
+
+  function ensureThumbObserver() {
+    if (state.thumbObserver) return state.thumbObserver;
+    state.thumbObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(en => { if (en.isIntersecting) { obs.unobserve(en.target); loadThumb(en.target); } });
+    }, { root: document.getElementById('gallery'), rootMargin: '80px' });
+    return state.thumbObserver;
+  }
+
+  async function loadThumb(thumbEl) {
+    const id = thumbEl.dataset.fileId;
+    const imgEl = thumbEl.querySelector('img');
+    try {
+      const resp = await HydroAPI.raw('GET', '/files/thumbnail/' + id, { silentError: true });
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      imgEl.onload = () => { imgEl.classList.add('loaded'); };
+      imgEl.src = url;
+      thumbEl.dataset.objUrl = url;
+      const ph = thumbEl.querySelector('.thumb-ph'); if (ph) ph.remove();
+    } catch (err) {
+      const ph = thumbEl.querySelector('.thumb-ph'); if (ph) ph.remove();
+      const fail = document.createElement('div'); fail.className = 'thumb-fail';
+      fail.textContent = (err && err.status === 429) ? '额度受限' : (err && err.status === 415) ? '非图片' : '加载失败';
+      thumbEl.appendChild(fail);
+    }
+  }
+
+  async function loadGallery(date) {
+    const grid = document.getElementById('gallery');
+    setText('gallery-title', '图片画廊');
+    document.getElementById('gallery-title').innerHTML = '图片画廊 <small>' + date + '</small>';
+    grid.innerHTML = '<div class="state-msg" style="position:static"><div class="spinner"></div></div>';
+    let d;
+    try { d = await HydroAPI.get('/files/phenology', { station_id: state.station, date, size: 60 }, { silentError: true }); }
+    catch (err) { grid.innerHTML = '<div class="state-msg error" style="position:static">' + friendlyErr(err) + '</div>'; return; }
+    const imgs = ((d && d.items) || []).filter(it => it.is_image);
+    if (!imgs.length) { grid.innerHTML = '<div class="state-msg" style="position:static">该日无图片文件</div>'; return; }
+    grid.innerHTML = '';
+    const obs = ensureThumbObserver();
+    imgs.forEach(it => {
+      const cap = (it.ptz != null ? ('PTZ' + it.ptz + ' ') : '') + (it.time_token || '');
+      const el = document.createElement('div');
+      el.className = 'thumb';
+      el.dataset.fileId = it.id;
+      el.innerHTML = `<div class="thumb-ph">加载中</div><img alt="${(it.rel_path || '').split('/').pop()}"><div class="thumb-cap">${cap || ('#' + it.id)}</div>`;
+      el.addEventListener('click', () => openLightbox(it, el.dataset.objUrl));
+      grid.appendChild(el);
+      obs.observe(el);
+    });
+  }
+
+  function openLightbox(item, objUrl) {
+    const box = document.getElementById('lightbox');
+    const img = document.getElementById('lb-img');
+    img.src = objUrl || '';
+    document.getElementById('lb-meta').innerHTML =
+      `<b>${(item.rel_path || '').split('/').pop()}</b> · ${item.file_type || ''} · ${item.capture_date || ''} ${item.time_token || ''}` +
+      (item.tz_assumption ? `<br/><span style="color:var(--warning)">时刻为 UTC+8 未核准假设</span>` : '');
+    const dl = document.getElementById('lb-download');
+    dl.onclick = async () => {
+      const name = (item.rel_path || 'file').split('/').pop();
+      try { await HydroAPI.downloadFile('/files/download/' + item.id, null, name); HydroAPI.message.success('已开始下载原图'); }
+      catch (err) { /* api.js 已提示（404 越权 / 429 超额度 / 413） */ }
+    };
+    box.classList.add('open');
+  }
+  window.closeLightbox = function () { document.getElementById('lightbox').classList.remove('open'); };
+  document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+
+  // ── 汇总加载所有观测面板 ──
+  function loadObsPanels() {
+    return Promise.allSettled([loadAdcp(), loadVector(), loadWave(), loadWq(), loadPhenology()]);
+  }
+
+  function selectStation(id) {
+    if (!state.stationMap.has(id)) return;
+    state.station = id;
+    document.getElementById('sel-station').value = id;
+    const s = state.stationMap.get(id);
+    if (s && s.lat != null && s.lng != null && state.map) state.map.flyTo([s.lat, s.lng], 8, { duration: 1.2 });
+    loadObsPanels();
+  }
+
+  // ── 控件绑定 ──
+  document.getElementById('sel-station').addEventListener('change', (e) => selectStation(e.target.value));
+  document.getElementById('seg-window').querySelectorAll('.seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('seg-window').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.window = btn.dataset.window;
+      loadObsPanels();
+    });
+  });
+  document.getElementById('in-adcp-metric').addEventListener('change', loadAdcp);
+  document.getElementById('in-wq-metric').addEventListener('change', loadWq);
+  document.getElementById('btn-reload').addEventListener('click', () => { loadSummary(); loadObsPanels(); });
+  document.getElementById('tg-overlay').addEventListener('change', (e) => { state.overlayOn = e.target.checked; applyOverlayVisibility(); });
+
+  window.addEventListener('resize', () => {
+    HydroCharts.resizeAll();
+    if (state.map) { try { state.map.invalidateSize(); } catch (e) {} }
+  });
+
+  // ════════ 引导 ════════
+  window.addEventListener('load', async () => {
+    if (!HydroAPI.isAuthenticated()) return;
+    initMap();
+    setStatus(true, '连接中...');
+    const minDelay = new Promise(r => setTimeout(r, 700));
+    const [settled] = await Promise.all([
+      Promise.allSettled([loadSummary(), loadStations(), loadOverlay()]),
+      minDelay,
+    ]);
+    const summaryOk = settled[0].status === 'fulfilled' && settled[0].value;
+    const stationsOk = settled[1].status === 'fulfilled' && settled[1].value;
+    setStatus(!!(summaryOk && stationsOk), (summaryOk && stationsOk) ? '系统运行中' : '部分数据连接中断');
+
+    if (state.station) { await loadObsPanels(); }
+    HydroCharts.resizeAll();
+
+    const loading = document.getElementById('loading');
+    loading.classList.add('hidden');
+    setTimeout(() => loading.remove(), 600);
+  });
+}
+</script>
+</body>
+</html>

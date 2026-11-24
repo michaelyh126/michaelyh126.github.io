@@ -9,7 +9,8 @@ import {
   Video,
 } from 'lucide-react';
 import { PROFILE } from '../data/profile';
-import { DEMO_CATALOG, type DemoId } from '../demos/registry';
+import { LIVE_APPS } from '../data/liveApps';
+import type { DemoId } from '../demos/registry';
 
 interface HeroProps {
   onOpenResume: () => void;
@@ -17,6 +18,12 @@ interface HeroProps {
 }
 
 export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
+  const geoAndAiApps = LIVE_APPS.filter(
+    (a) => a.category === 'Geospatial & Data' || a.id === 'sound-ai'
+  );
+  const salonApps = LIVE_APPS.filter((a) => a.category === 'Salon 4-Terminal SaaS');
+  const cliSandboxes = LIVE_APPS.filter((a) => !a.isOriginal);
+
   return (
     <section
       id="top"
@@ -51,7 +58,7 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-glow hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
               >
                 <Play className="h-4 w-4 fill-current" />
-                <span>Explore All 6 Live Demos</span>
+                <span>Explore 9 Live Production Apps</span>
                 <ArrowDownRight className="h-4 w-4" />
               </a>
 
@@ -74,37 +81,33 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
             </div>
           </div>
 
-          {/* Right Technical Capability & Direct 6-Demo Launcher Card */}
+          {/* Right Live Production Apps Quick-Launcher Card */}
           <div className="lg:col-span-5">
             <div className="rounded-2xl border border-slate-200/90 bg-white/95 p-5 shadow-panel backdrop-blur-md dark:border-slate-800 dark:bg-obsidian-900/95 sm:p-6">
-              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3.5 dark:border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800">
                 <div className="flex items-center gap-2 font-mono text-xs font-semibold text-slate-700 dark:text-slate-200">
                   <Terminal className="h-4 w-4 text-cyan-500" />
-                  <span>LIVE_SANDBOX_HUB (6 APPS)</span>
+                  <span>LIVE_PRODUCTION_APPS (9)</span>
                 </div>
                 <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                   100% Synthetic
                 </span>
               </div>
 
-              {/* Instant 6-Demo Launcher Grid */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {DEMO_CATALOG.map((demo, idx) => (
+              {/* Geospatial, Data & Sound-AI Original Apps */}
+              <div className="mt-3.5 grid grid-cols-2 gap-2">
+                {geoAndAiApps.map((app) => (
                   <a
-                    key={demo.id}
-                    href={demo.route}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onLaunchDemo(demo.id);
-                    }}
-                    className="group flex items-center justify-between gap-1.5 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-left hover:border-cyan-500/60 hover:bg-cyan-500/10 dark:border-slate-800 dark:bg-obsidian-950/75 dark:hover:border-cyan-400/60"
+                    key={app.id}
+                    href={app.href}
+                    className="group flex items-center justify-between gap-1.5 rounded-xl border border-slate-200/90 bg-slate-50/80 px-2.5 py-2 text-left hover:border-cyan-500/60 hover:bg-cyan-500/10 dark:border-slate-800 dark:bg-obsidian-950/75 dark:hover:border-cyan-400/60"
                   >
                     <div className="min-w-0">
                       <div className="truncate font-mono text-[11px] font-bold text-slate-900 group-hover:text-cyan-700 dark:text-slate-100 dark:group-hover:text-cyan-300">
-                        0{idx + 1}. {demo.shortTitle}
+                        {app.shortLabel}
                       </div>
                       <div className="truncate font-mono text-[9px] text-slate-500 dark:text-slate-400">
-                        {demo.category}
+                        {app.stackTag}
                       </div>
                     </div>
                     <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-slate-400 group-hover:text-cyan-500" />
@@ -112,10 +115,49 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 ))}
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-2.5 border-t border-slate-200/80 pt-4 dark:border-slate-800 sm:grid-cols-2">
+              {/* 4-Terminal Salon SaaS Strip */}
+              <div className="mt-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-obsidian-950/60">
+                <div className="mb-1.5 flex items-center justify-between font-mono text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                  <span>SALON 4-TERMINAL SAAS (LIVE SYNCED)</span>
+                  <span className="text-cyan-600 dark:text-cyan-400">4 APPS</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {salonApps.map((app) => (
+                    <a
+                      key={app.id}
+                      href={app.href}
+                      className="rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center font-mono text-[10px] font-bold text-slate-800 hover:border-cyan-500 hover:text-cyan-700 dark:border-slate-800 dark:bg-obsidian-900 dark:text-slate-200 dark:hover:border-cyan-400 dark:hover:text-cyan-300"
+                    >
+                      {app.shortLabel}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interactive CLI & Research Sandboxes */}
+              <div className="mt-2.5 grid grid-cols-2 gap-2">
+                {cliSandboxes.map((sim) => (
+                  <a
+                    key={sim.id}
+                    href={sim.href}
+                    onClick={(e) => {
+                      if (sim.sandboxId) {
+                        e.preventDefault();
+                        onLaunchDemo(sim.sandboxId);
+                      }
+                    }}
+                    className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 font-mono text-[10px] font-semibold text-amber-800 hover:border-amber-500 dark:text-amber-300"
+                  >
+                    <span className="truncate">{sim.shortLabel}</span>
+                    <ArrowUpRight className="h-3 w-3 shrink-0" />
+                  </a>
+                ))}
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-2.5 border-t border-slate-200/80 pt-3.5 dark:border-slate-800 sm:grid-cols-2">
                 <div className="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-obsidian-850 dark:text-slate-300">
                   <Video className="h-4 w-4 shrink-0 text-cyan-500" />
-                  <span>Playwright + FFmpeg QA Proof</span>
+                  <span>Playwright + FFmpeg QA</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-obsidian-850 dark:text-slate-300">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />

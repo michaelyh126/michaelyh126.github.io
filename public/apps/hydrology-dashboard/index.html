@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HydrologyPlatform · Real-Time Coastal &amp; Basin Telemetry Suite</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #030b18;
+    color: #dbeeff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .suite-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+  .suite-bar {
+    height: 44px;
+    flex: 0 0 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 14px;
+    background: linear-gradient(90deg, #040d1e 0%, #071933 50%, #040d1e 100%);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.24);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+  }
+  .suite-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    white-space: nowrap;
+  }
+  .suite-brand-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #7dd3fc;
+  }
+  .suite-brand-sub {
+    font-size: 11px;
+    color: rgba(148, 197, 235, 0.65);
+  }
+  .suite-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(2, 8, 20, 0.65);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .suite-tab {
+    border: none;
+    background: transparent;
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+  }
+  .suite-tab:hover {
+    color: #ffffff;
+    background: rgba(56, 189, 248, 0.14);
+  }
+  .suite-tab.active {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.45);
+  }
+  .demo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(8, 20, 40, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #7dd3fc;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .demo-pill:hover {
+    background: rgba(14, 36, 68, 0.98);
+    border-color: #7dd3fc;
+    color: #ffffff;
+  }
+  .demo-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+  }
+  .suite-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #030b18;
+  }
+  .suite-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: none;
+    background: #030b18;
+  }
+  .suite-frame.active {
+    display: block;
+  }
+  @media (max-width: 960px) {
+    .suite-brand-sub { display: none; }
+    .suite-bar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px; }
+    .suite-tabs { overflow-x: auto; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="suite-shell">
+  <header class="suite-bar">
+    <div class="suite-brand">
+      <svg width="22" height="22" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <circle cx="18" cy="18" r="15" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.7"/>
+        <path d="M5 20 Q11 15 18 20 Q25 25 31 20" stroke="#2dd4bf" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <circle cx="18" cy="14" r="2.5" fill="#38bdf8"/>
+      </svg>
+      <span class="suite-brand-title">HydrologyPlatform</span>
+      <span class="suite-brand-sub">· 3-in-1 Telemetry &amp; Spatial Query Suite</span>
+    </div>
+
+    <nav class="suite-tabs" role="tablist" aria-label="Hydrology Platform Apps">
+      <button class="suite-tab active" role="tab" data-app="public" aria-selected="true">Public Hydrology Big-Screen</button>
+      <button class="suite-tab" role="tab" data-app="own" aria-selected="false">Station Network Dashboard</button>
+      <button class="suite-tab" role="tab" data-app="query" aria-selected="false">Spatial &amp; Time-Series Query</button>
+    </nav>
+
+    <a class="demo-pill" href="/">
+      <span class="demo-dot"></span>
+      <span>Demo Mode (Synthetic Data) · ← Portfolio</span>
+    </a>
+  </header>
+
+  <main class="suite-stage">
+    <iframe id="frame-public" class="suite-frame active" title="Public Hydrology Big-Screen" data-src="./frontend/dashboard.html"></iframe>
+    <iframe id="frame-own" class="suite-frame" title="Station Network Dashboard" data-src="./own-dashboard/dashboard.html"></iframe>
+    <iframe id="frame-query" class="suite-frame" title="Spatial &amp; Time-Series Query" data-src="./query-web/index.html"></iframe>
+  </main>
+</div>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.suite-tab');
+  var validApps = { public: true, own: true, query: true };
+
+  function activate(appKey, updateHash) {
+    if (!validApps[appKey]) appKey = 'public';
+    tabs.forEach(function (btn) {
+      var isActive = btn.dataset.app === appKey;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+    ['public', 'own', 'query'].forEach(function (key) {
+      var frame = document.getElementById('frame-' + key);
+      if (!frame) return;
+      var isActive = key === appKey;
+      frame.classList.toggle('active', isActive);
+      if (isActive) {
+        if (!frame.getAttribute('src')) {
+          frame.setAttribute('src', frame.getAttribute('data-src'));
+        } else {
+          setTimeout(function () {
+            try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch (e) {}
+          }, 80);
+        }
+      }
+    });
+    if (updateHash) {
+      try { history.replaceState(null, '', '#' + appKey); } catch (e) { location.hash = appKey; }
+    }
+  }
+
+  tabs.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activate(btn.dataset.app, true);
+    });
+  });
+
+  window.addEventListener('hashchange', function () {
+    var key = (location.hash || '').replace(/^#\/?/, '');
+    if (validApps[key]) activate(key, false);
+  });
+
+  var initial = (location.hash || '').replace(/^#\/?/, '');
+  activate(validApps[initial] ? initial : 'public', false);
+})();
+</script>
+</body>
+</html>

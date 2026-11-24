@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Compass, FileText, Menu, Moon, Play, Sun, X } from 'lucide-react';
 import { PROFILE } from '../data/profile';
-import { DEMO_CATALOG, type DemoId } from '../demos/registry';
+import { LIVE_APP_GROUPS, LIVE_APPS } from '../data/liveApps';
+import type { DemoId } from '../demos/registry';
 
 interface NavbarProps {
   theme: 'dark' | 'light';
@@ -20,18 +21,18 @@ const NAV_LINKS = [
 
 export function Navbar({ theme, onToggleTheme, onOpenResume, onLaunchDemo }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [demosMenuOpen, setDemosMenuOpen] = useState(false);
+  const [appsMenuOpen, setAppsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!demosMenuOpen) return;
+    if (!appsMenuOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDemosMenuOpen(false);
+        setAppsMenuOpen(false);
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDemosMenuOpen(false);
+      if (e.key === 'Escape') setAppsMenuOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('keydown', handleEsc);
@@ -39,7 +40,7 @@ export function Navbar({ theme, onToggleTheme, onOpenResume, onLaunchDemo }: Nav
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleEsc);
     };
-  }, [demosMenuOpen]);
+  }, [appsMenuOpen]);
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md dark:border-slate-800/80 dark:bg-obsidian-950/85">
@@ -69,49 +70,74 @@ export function Navbar({ theme, onToggleTheme, onOpenResume, onLaunchDemo }: Nav
           </div>
         </a>
 
-        {/* Desktop Links + Live Demos (6) Dropdown */}
+        {/* Desktop Links + Live Apps (9) Dropdown */}
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary Navigation">
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
-              onClick={() => setDemosMenuOpen((o) => !o)}
-              aria-expanded={demosMenuOpen}
+              onClick={() => setAppsMenuOpen((o) => !o)}
+              aria-expanded={appsMenuOpen}
               className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/35 bg-cyan-500/10 px-3 py-1.5 font-mono text-xs font-bold text-cyan-700 hover:bg-cyan-500/20 dark:text-cyan-300"
             >
               <Play className="h-3 w-3 fill-current" />
-              <span>Live Demos (6)</span>
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${demosMenuOpen ? 'rotate-180' : ''}`} />
+              <span>Live Apps (9)</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${appsMenuOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
-            {demosMenuOpen && (
-              <div className="absolute left-0 top-11 z-50 w-80 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl dark:border-slate-800 dark:bg-obsidian-900">
-                <div className="px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  Interactive Sandboxes · 100% Synthetic Data
+            {appsMenuOpen && (
+              <div className="absolute left-0 top-11 z-50 w-[440px] max-w-[90vw] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl dark:border-slate-800 dark:bg-obsidian-900">
+                <div className="flex items-center justify-between border-b border-slate-200/80 px-2 pb-2 dark:border-slate-800">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">
+                    9 Original Production Apps + 2 Sandboxes
+                  </span>
+                  <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+                    100% Synthetic Data
+                  </span>
                 </div>
-                <div className="space-y-1">
-                  {DEMO_CATALOG.map((demo, idx) => (
-                    <a
-                      key={demo.id}
-                      href={demo.route}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setDemosMenuOpen(false);
-                        onLaunchDemo(demo.id);
-                      }}
-                      className="flex items-start justify-between gap-2 rounded-xl px-3 py-2 text-left hover:bg-cyan-500/10"
-                    >
-                      <div className="min-w-0">
-                        <div className="font-display text-xs font-bold text-slate-950 dark:text-white">
-                          {idx + 1}. {demo.shortTitle}
-                        </div>
-                        <div className="truncate font-mono text-[10px] text-slate-500 dark:text-slate-400">
-                          {demo.tagline}
-                        </div>
+
+                <div className="mt-2.5 max-h-[70vh] space-y-3 overflow-y-auto pr-1">
+                  {LIVE_APP_GROUPS.map((groupName) => (
+                    <div key={groupName}>
+                      <div className="px-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        {groupName}
                       </div>
-                      <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[9px] text-cyan-700 dark:bg-obsidian-950 dark:text-cyan-400">
-                        {demo.category}
-                      </span>
-                    </a>
+                      <div className="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2">
+                        {LIVE_APPS.filter((a) => a.category === groupName).map((app) => (
+                          <a
+                            key={app.id}
+                            href={app.href}
+                            onClick={(e) => {
+                              setAppsMenuOpen(false);
+                              if (app.sandboxId) {
+                                e.preventDefault();
+                                onLaunchDemo(app.sandboxId);
+                              }
+                            }}
+                            className="flex flex-col rounded-xl border border-transparent px-2.5 py-2 text-left hover:border-cyan-500/30 hover:bg-cyan-500/10"
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="truncate font-display text-xs font-bold text-slate-950 dark:text-white">
+                                {app.shortLabel}
+                              </span>
+                              <span
+                                className={`shrink-0 rounded px-1 py-0.5 font-mono text-[8px] font-bold uppercase ${
+                                  app.isOriginal
+                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                                    : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                                }`}
+                              >
+                                {app.isOriginal ? 'App' : 'Sim'}
+                              </span>
+                            </div>
+                            <span className="truncate font-mono text-[10px] text-slate-500 dark:text-slate-400">
+                              {app.stackTag}
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -178,21 +204,23 @@ export function Navbar({ theme, onToggleTheme, onOpenResume, onLaunchDemo }: Nav
 
           <div className="mb-3 rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-2.5">
             <div className="mb-1.5 font-mono text-[10px] font-bold uppercase text-cyan-700 dark:text-cyan-400">
-              Live Interactive Demos (6)
+              Live Original Apps (9) &amp; Sandboxes
             </div>
             <div className="grid grid-cols-2 gap-1.5">
-              {DEMO_CATALOG.map((demo) => (
+              {LIVE_APPS.map((app) => (
                 <a
-                  key={demo.id}
-                  href={demo.route}
+                  key={app.id}
+                  href={app.href}
                   onClick={(e) => {
-                    e.preventDefault();
                     setMobileOpen(false);
-                    onLaunchDemo(demo.id);
+                    if (app.sandboxId) {
+                      e.preventDefault();
+                      onLaunchDemo(app.sandboxId);
+                    }
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-[11px] font-semibold text-slate-800 dark:border-slate-800 dark:bg-obsidian-900 dark:text-slate-200"
+                  className="truncate rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-mono text-[10px] font-semibold text-slate-800 dark:border-slate-800 dark:bg-obsidian-900 dark:text-slate-200"
                 >
-                  {demo.shortTitle}
+                  {app.shortLabel}
                 </a>
               ))}
             </div>

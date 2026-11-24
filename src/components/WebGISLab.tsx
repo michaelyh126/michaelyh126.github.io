@@ -591,13 +591,20 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="/apps/webgis-workbench/"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white shadow-sm transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+            >
+              <span>Launch Original WebGIS Workbench</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
             {onLaunchFullStudio && (
               <button
                 type="button"
                 onClick={onLaunchFullStudio}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white shadow-sm transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-3 py-1.5 font-mono text-[11px] font-bold text-cyan-700 transition hover:bg-cyan-600 hover:text-white dark:text-cyan-300 dark:hover:bg-cyan-500 dark:hover:text-slate-950"
               >
-                <span>Open Full Studio (Swipe &amp; Area)</span>
+                <span>Swipe Compare Lab</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </button>
             )}
