@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Github, Globe, Mail, Printer, X } from 'lucide-react';
 import { PROFILE } from '../data/profile';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ResumeModalProps {
   open: boolean;
@@ -8,6 +9,8 @@ interface ResumeModalProps {
 }
 
 export function ResumeModal({ open, onClose }: ResumeModalProps) {
+  const { bi } = useLanguage();
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -41,7 +44,10 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
         {/* Sticky Modal Controls (hidden during print) */}
         <div className="no-print flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
           <div className="font-mono text-xs font-semibold text-slate-600">
-            ONE-PAGE ENGLISH CV · PRINT / SAVE AS PDF READY
+            {bi(
+              'ONE-PAGE ENGLISH CV · PRINT / SAVE AS PDF READY',
+              '单页英文 ATS 标准简历 · 支持直接打印或保存为 PDF'
+            )}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -50,7 +56,7 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
               className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-500"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span>Print / Save PDF</span>
+              <span>{bi('Print / Save PDF', '打印 / 导出 PDF')}</span>
             </button>
             <button
               type="button"

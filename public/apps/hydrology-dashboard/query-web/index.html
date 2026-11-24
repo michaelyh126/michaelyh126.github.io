@@ -221,6 +221,7 @@
 
 <datalist id="metric-datalist"></datalist>
 
+<script src="../shared-i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/charts.js"></script>
 <script>
@@ -714,7 +715,9 @@ function runQueryApp() {
     el('sp-attime').value = toLocalInput(now);
   }
 
-  window.addEventListener('load', async () => {
+  function hideLoading() { const ld = document.getElementById('loading'); if (ld) { ld.classList.add('hidden'); ld.style.display = 'none'; ld.remove(); } }
+  setTimeout(hideLoading, 2500);
+  async function bootQueryApp() {
     if (!HydroAPI.isAuthenticated()) return;
     setText('u-name', HydroAPI.getUsername() || '-');
     setText('u-role', HydroAPI.roleLabel(HydroAPI.getRole()));
@@ -722,7 +725,7 @@ function runQueryApp() {
     initMap();
     renderNsFilter();
     setStatus(true, '连接中...');
-    const minDelay = new Promise(r => setTimeout(r, 600));
+    const minDelay = new Promise(r => setTimeout(r, 120));
     const [settled] = await Promise.all([
       Promise.allSettled([loadStations(), loadMetrics()]),
       minDelay,
@@ -737,10 +740,9 @@ function runQueryApp() {
       await Promise.allSettled([runSpatial(), runSeries(), runProfile()]);
     }
     HydroQCharts.resizeAll();
-    const loading = el('loading');
-    loading.classList.add('hidden');
-    setTimeout(() => loading.remove(), 600);
-  });
+    hideLoading();
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootQueryApp); } else { bootQueryApp(); }
 }
 </script>
 </body>

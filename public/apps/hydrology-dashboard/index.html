@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     padding: 0 14px;
     background: linear-gradient(90deg, #040d1e 0%, #071933 50%, #040d1e 100%);
     border-bottom: 1px solid rgba(56, 189, 248, 0.24);
@@ -83,23 +83,42 @@
   .demo-pill {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 5px 12px;
+    gap: 8px;
+    padding: 4px 11px;
     border-radius: 999px;
-    background: rgba(8, 20, 40, 0.9);
+    background: rgba(8, 20, 40, 0.92);
     border: 1px solid rgba(56, 189, 248, 0.35);
     color: #7dd3fc;
     font-size: 12px;
     font-weight: 500;
-    text-decoration: none;
     white-space: nowrap;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .demo-pill:hover {
-    background: rgba(14, 36, 68, 0.98);
+  .demo-link {
+    color: #7dd3fc;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .demo-link:hover { color: #ffffff; }
+  .demo-sep { color: rgba(56, 189, 248, 0.35); }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    background: rgba(56, 189, 248, 0.12);
+    color: rgba(186, 230, 253, 0.65);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .lang-toggle:hover {
+    background: rgba(56, 189, 248, 0.24);
     border-color: #7dd3fc;
-    color: #ffffff;
   }
+  .lang-toggle .active { color: #ffffff; }
   .demo-dot {
     width: 7px;
     height: 7px;
@@ -125,7 +144,7 @@
   .suite-frame.active {
     display: block;
   }
-  @media (max-width: 960px) {
+  @media (max-width: 1024px) {
     .suite-brand-sub { display: none; }
     .suite-bar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px; }
     .suite-tabs { overflow-x: auto; max-width: 100%; }
@@ -142,35 +161,81 @@
         <circle cx="18" cy="14" r="2.5" fill="#38bdf8"/>
       </svg>
       <span class="suite-brand-title">HydrologyPlatform</span>
-      <span class="suite-brand-sub">· 3-in-1 Telemetry &amp; Spatial Query Suite</span>
+      <span class="suite-brand-sub" id="suite-sub">· 3-in-1 Telemetry &amp; Spatial Query Suite</span>
     </div>
 
-    <nav class="suite-tabs" role="tablist" aria-label="Hydrology Platform Apps">
-      <button class="suite-tab active" role="tab" data-app="public" aria-selected="true">Public Hydrology Big-Screen</button>
-      <button class="suite-tab" role="tab" data-app="own" aria-selected="false">Station Network Dashboard</button>
-      <button class="suite-tab" role="tab" data-app="query" aria-selected="false">Spatial &amp; Time-Series Query</button>
+    <nav class="suite-tabs" role="tablist" aria-label="Hydrology Platform Views">
+      <button class="suite-tab active" role="tab" data-app="public" aria-selected="true" id="tab-public">Public Hydrology Big-Screen</button>
+      <button class="suite-tab" role="tab" data-app="own" aria-selected="false" id="tab-own">Station Network Dashboard</button>
+      <button class="suite-tab" role="tab" data-app="query" aria-selected="false" id="tab-query">Spatial &amp; Time-Series Query</button>
     </nav>
 
-    <a class="demo-pill" href="/">
+    <div class="demo-pill">
       <span class="demo-dot"></span>
-      <span>Demo Mode (Synthetic Data) · ← Portfolio</span>
-    </a>
+      <a class="demo-link" href="/" id="demo-link">Demo Mode (Synthetic Data) · ← Portfolio</a>
+      <span class="demo-sep" aria-hidden="true">|</span>
+      <button type="button" class="lang-toggle" id="btn-lang" aria-label="Toggle language EN / 中文">
+        <span id="lbl-en" class="active">EN</span>
+        <span style="opacity:.45">/</span>
+        <span id="lbl-zh">中文</span>
+      </button>
+    </div>
   </header>
 
   <main class="suite-stage">
     <iframe id="frame-public" class="suite-frame active" title="Public Hydrology Big-Screen" data-src="./frontend/dashboard.html"></iframe>
     <iframe id="frame-own" class="suite-frame" title="Station Network Dashboard" data-src="./own-dashboard/dashboard.html"></iframe>
-    <iframe id="frame-query" class="suite-frame" title="Spatial &amp; Time-Series Query" data-src="./query-web/index.html"></iframe>
+    <iframe id="frame-query" class="suite-frame" title="Spatial & Time-Series Query" data-src="./query-web/index.html"></iframe>
   </main>
 </div>
 
+<script src="./shared-i18n.js"></script>
 <script>
 (function () {
   var tabs = document.querySelectorAll('.suite-tab');
   var validApps = { public: true, own: true, query: true };
+  var activeApp = 'public';
+
+  var SHELL_TEXT = {
+    en: {
+      title: 'HydrologyPlatform · Real-Time Coastal & Basin Telemetry Suite',
+      sub: '· 3-in-1 Telemetry & Spatial Query Suite',
+      public: 'Public Hydrology Big-Screen',
+      own: 'Station Network Dashboard',
+      query: 'Spatial & Time-Series Query',
+      demo: 'Demo Mode (Synthetic Data) · ← Portfolio',
+    },
+    zh: {
+      title: 'HydrologyPlatform · 水文大数据可视化套件',
+      sub: '· 三合一水文遥测与空间查询平台',
+      public: '公网水文大屏',
+      own: '自有站点监测大屏',
+      query: '空间与时序查询平台',
+      demo: '演示模式（合成数据） · ← 返回作品集',
+    },
+  };
+
+  function applyShellLang() {
+    var lang = window.HydroI18n.getLang();
+    var t = SHELL_TEXT[lang];
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = t.title;
+    document.getElementById('suite-sub').textContent = t.sub;
+    document.getElementById('tab-public').textContent = t.public;
+    document.getElementById('tab-own').textContent = t.own;
+    document.getElementById('tab-query').textContent = t.query;
+    document.getElementById('demo-link').textContent = t.demo;
+    document.getElementById('lbl-en').classList.toggle('active', lang === 'en');
+    document.getElementById('lbl-zh').classList.toggle('active', lang === 'zh');
+  }
+
+  function frameUrl(base) {
+    return base + '?lang=' + encodeURIComponent(window.HydroI18n.getLang());
+  }
 
   function activate(appKey, updateHash) {
     if (!validApps[appKey]) appKey = 'public';
+    activeApp = appKey;
     tabs.forEach(function (btn) {
       var isActive = btn.dataset.app === appKey;
       btn.classList.toggle('active', isActive);
@@ -182,8 +247,9 @@
       var isActive = key === appKey;
       frame.classList.toggle('active', isActive);
       if (isActive) {
-        if (!frame.getAttribute('src')) {
-          frame.setAttribute('src', frame.getAttribute('data-src'));
+        var desired = frameUrl(frame.getAttribute('data-src'));
+        if (frame.getAttribute('src') !== desired) {
+          frame.setAttribute('src', desired);
         } else {
           setTimeout(function () {
             try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch (e) {}
@@ -196,6 +262,22 @@
     }
   }
 
+  document.getElementById('btn-lang').addEventListener('click', function () {
+    var next = window.HydroI18n.isEn() ? 'zh' : 'en';
+    window.HydroI18n.setLang(next);
+    applyShellLang();
+    // Reload active iframe with new language and clear hidden iframes so they load cleanly in the new language on visit
+    ['public', 'own', 'query'].forEach(function (key) {
+      var frame = document.getElementById('frame-' + key);
+      if (!frame) return;
+      if (key === activeApp) {
+        frame.setAttribute('src', frameUrl(frame.getAttribute('data-src')));
+      } else {
+        frame.removeAttribute('src');
+      }
+    });
+  });
+
   tabs.forEach(function (btn) {
     btn.addEventListener('click', function () {
       activate(btn.dataset.app, true);
@@ -203,11 +285,12 @@
   });
 
   window.addEventListener('hashchange', function () {
-    var key = (location.hash || '').replace(/^#\/?/, '');
+    var key = (location.hash || '').replace(/^#\/?/, '').split('?')[0];
     if (validApps[key]) activate(key, false);
   });
 
-  var initial = (location.hash || '').replace(/^#\/?/, '');
+  applyShellLang();
+  var initial = (location.hash || '').replace(/^#\/?/, '').split('?')[0];
   activate(validApps[initial] ? initial : 'public', false);
 })();
 </script>

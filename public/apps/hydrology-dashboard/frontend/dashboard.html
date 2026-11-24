@@ -827,7 +827,7 @@
     to { width: 100%; }
   }
 
-  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loading-overlay.hidden { display: none !important; opacity: 0; pointer-events: none; visibility: hidden; }
 </style>
 </head>
 <body>
@@ -1044,6 +1044,7 @@
   </div><!-- body -->
 </div><!-- screen -->
 
+<script src="../shared-i18n.js"></script>
 <script src="js/api.js"></script>
 <script>
 if (!HydroAPI.isAuthenticated()) {
@@ -1113,7 +1114,7 @@ const METRIC_META = {
   salinity_psu:  { label: '盐度', unit: 'psu' },
   cloud_base_m:  { label: '云高', unit: 'm' },
 };
-function metricLabel(code) { return (METRIC_META[code] && METRIC_META[code].label) || code; }
+function metricLabel(code) { const raw = (METRIC_META[code] && METRIC_META[code].label) || code; return (window.HydroI18n && HydroI18n.isEn()) ? HydroI18n.translateText(raw) : raw; }
 function metricUnit(code) { return (METRIC_META[code] && METRIC_META[code].unit) || ''; }
 
 // 河口配色：循环引用既有 CSS 变量，不新增色值
@@ -1181,10 +1182,13 @@ function fmtInt(n) {
 function fmtTimeLabel(iso, interval) {
   const d = new Date(iso);
   if (interval === 'raw') {
-    return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' +
-      d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const lc = window.HydroI18n ? HydroI18n.locale() : 'en-US';
+    return d.toLocaleDateString(lc, { month: '2-digit', day: '2-digit' }) + ' ' +
+      d.toLocaleTimeString(lc, { hour: '2-digit', minute: '2-digit', hour12: false });
   }
-  return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' + d.getHours() + '时';
+  const lc = window.HydroI18n ? HydroI18n.locale() : 'en-US';
+  const hr = window.HydroI18n && HydroI18n.isZh() ? (d.getHours() + '时') : (String(d.getHours()).padStart(2, '0') + ':00');
+  return d.toLocaleDateString(lc, { month: '2-digit', day: '2-digit' }) + ' ' + hr;
 }
 
 function hexToRgb(hex) {
@@ -1211,7 +1215,8 @@ function computeRange(rangeKey) {
 function updateClock() {
   const now = new Date();
   setText('clock', now.toTimeString().slice(0, 8));
-  setText('date-display', now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
+  const lc = window.HydroI18n ? HydroI18n.locale() : 'en-US';
+  setText('date-display', now.toLocaleDateString(lc, { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -1557,7 +1562,7 @@ function renderConnectivityCard(stn) {
   deltaEl.className = 'val-delta';
   deltaEl.style.color = conn.color;
   deltaEl.textContent = stn.latest_obs_time
-    ? ('最近数据 ' + new Date(stn.latest_obs_time).toLocaleString('zh-CN'))
+    ? ('最近数据 ' + new Date(stn.latest_obs_time).toLocaleString(window.HydroI18n ? HydroI18n.locale() : 'en-US'))
     : '暂无观测记录';
 }
 
@@ -1575,7 +1580,7 @@ function renderChartMessage(message, color) {
     graphic: {
       type: 'text',
       left: 'center', top: 'middle',
-      style: { text: message, fill: color, fontSize: 12 },
+      style: { text: (window.HydroI18n && HydroI18n.isEn()) ? HydroI18n.translateText(message) : message, fill: color, fontSize: 12 },
     },
   });
 }
@@ -1658,7 +1663,7 @@ function previewPopupHtml(est, stations) {
     ${stations.map(row => `<div class="preview-station">
       <div class="preview-name">${escapeHtml(row.station_name)}</div>
       <div class="preview-value">${escapeHtml(metricLabel(row.metric))} ${escapeHtml(row.value)} ${escapeHtml(metricUnit(row.metric) || row.unit || '')}</div>
-      <div class="preview-meta">${escapeHtml(new Date(row.time).toLocaleString('zh-CN'))}</div>
+      <div class="preview-meta">${escapeHtml(new Date(row.time).toLocaleString(window.HydroI18n ? HydroI18n.locale() : 'en-US'))}</div>
     </div>`).join('')}
   </div>`;
 }
@@ -1960,7 +1965,9 @@ document.head.appendChild(markerStyle);
 // ════════════════════════════════
 //  INIT
 // ════════════════════════════════
-window.addEventListener('load', async () => {
+function hideFeLoading() { const ld = document.getElementById('loading'); if (ld) { ld.classList.add('hidden'); ld.style.display = 'none'; ld.remove(); } }
+setTimeout(hideFeLoading, 2500);
+async function bootPublicBigScreen() {
   // 未登录时顶部已触发 HydroAPI.redirectToLogin()，此处避免在跳转完成前继续发起数据请求
   if (!HydroAPI.isAuthenticated()) return;
 
@@ -1969,7 +1976,7 @@ window.addEventListener('load', async () => {
   initRefreshSwitch();
   setSystemStatus(true, '连接中...');
 
-  const minDelay = new Promise(resolve => setTimeout(resolve, 900));
+  const minDelay = new Promise(resolve => setTimeout(resolve, 150));
   const [settledResults] = await Promise.all([
     Promise.allSettled([bootstrap(), loadSummary(), loadAlertsTicker()]),
     minDelay,
@@ -1980,9 +1987,9 @@ window.addEventListener('load', async () => {
   const summaryOk = summaryResult.status === 'fulfilled' && summaryResult.value;
   setSystemStatus(!!(bootOk && summaryOk), (bootOk && summaryOk) ? '系统运行中' : '部分数据连接中断');
 
-  document.getElementById('loading').classList.add('hidden');
-  setTimeout(() => document.getElementById('loading').remove(), 700);
-});
+  hideFeLoading();
+}
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootPublicBigScreen); } else { bootPublicBigScreen(); }
 </script>
 </body>
 </html>

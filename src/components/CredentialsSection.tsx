@@ -1,7 +1,12 @@
 import { Award, BookOpen, Cpu, GraduationCap } from 'lucide-react';
-import { CREDENTIALS, STACK_MATRIX } from '../data/services';
+import { getCredentials, getStackMatrix } from '../data/services';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export function CredentialsSection() {
+  const { lang, bi } = useLanguage();
+  const stackMatrix = getStackMatrix(lang);
+  const credentials = getCredentials(lang);
+
   return (
     <section
       id="credentials"
@@ -12,18 +17,20 @@ export function CredentialsSection() {
         <div>
           <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
             <Cpu className="h-3.5 w-3.5" />
-            <span>Technical Stack Matrix</span>
+            <span>{bi('Technical Stack Matrix', '核心技术栈矩阵')}</span>
           </div>
           <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-            Production Capabilities &amp; Credentials
+            {bi('Production Capabilities & Credentials', '工程技术栈与科研履历')}
           </h2>
           <p className="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-            Bridging spatial algorithms, peer-reviewed computer vision research, and pragmatic
-            full-stack shipping across TypeScript, Python, Java, and Linux production infrastructure.
+            {bi(
+              'Bridging spatial algorithms, peer-reviewed computer vision research, and pragmatic full-stack shipping across TypeScript, Python, Java, and Linux production infrastructure.',
+              '打通空间信息算法、顶会视觉科研与务实全栈落地，覆盖 TypeScript、Python、Java 与 Linux 生产级部署运维。'
+            )}
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STACK_MATRIX.map((group) => (
+            {stackMatrix.map((group) => (
               <div
                 key={group.category}
                 className="rounded-2xl border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-obsidian-900"
@@ -56,25 +63,34 @@ export function CredentialsSection() {
             <div className="h-full rounded-2xl border border-cyan-500/35 bg-gradient-to-br from-cyan-500/10 via-white to-emerald-500/5 p-6 dark:from-cyan-500/15 dark:via-obsidian-900 dark:to-emerald-500/10">
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/35 bg-cyan-500/15 px-3 py-1 font-mono text-[11px] font-semibold text-cyan-800 dark:text-cyan-300">
                 <BookOpen className="h-3.5 w-3.5" />
-                <span>IEEE SMC 2026 · Accepted · First Author</span>
+                <span>
+                  {bi(
+                    'IEEE SMC 2026 · Accepted · First Author',
+                    'IEEE SMC 2026 · 已录用 · 第一作者'
+                  )}
+                </span>
               </div>
 
               <h3 className="mt-4 font-display text-2xl font-bold text-slate-950 dark:text-white">
-                SBUPNet: Uncertainty-Guided Lightweight UHR Semantic Segmentation
+                {bi(
+                  'SBUPNet: Uncertainty-Guided Lightweight UHR Semantic Segmentation',
+                  'SBUPNet：面向超高分辨率遥感影像的不确定像素轻量化语义分割网络'
+                )}
               </h3>
 
               <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                Research on real-time semantic segmentation for ultra-high-resolution aerial and
-                remote-sensing imagery—explicitly targeting the trade-off between pixel-level
-                accuracy, inference throughput, and GPU memory footprint.
+                {bi(
+                  'Research on real-time semantic segmentation for ultra-high-resolution aerial and remote-sensing imagery—explicitly targeting the trade-off between pixel-level accuracy, inference throughput, and GPU memory footprint.',
+                  '针对超高分辨率遥感影像语义分割中的精度、推理吞吐与显存开销权衡，提出基于不确定像素引导的轻量化双分支架构。'
+                )}
               </p>
 
               <div className="mt-5 grid grid-cols-2 gap-3">
                 {[
-                  { val: '76.5%', label: 'Inria Aerial mIoU' },
-                  { val: '9.49 FPS', label: 'Real-Time Throughput' },
-                  { val: '+20%', label: 'Speed vs. ISDNet' },
-                  { val: '-35%', label: 'Train Time & Peak VRAM' },
+                  { val: '76.5%', label: bi('Inria Aerial mIoU', 'Inria Aerial mIoU 精度') },
+                  { val: '9.49 FPS', label: bi('Real-Time Throughput', '实时推理吞吐') },
+                  { val: '+20%', label: bi('Speed vs. ISDNet', '相比 ISDNet 提速') },
+                  { val: '-35%', label: bi('Train Time & Peak VRAM', '训练耗时与显存降低') },
                 ].map((stat) => (
                   <div
                     key={stat.label}
@@ -92,16 +108,22 @@ export function CredentialsSection() {
 
               <div className="mt-5 rounded-xl border border-slate-200/80 bg-white/80 p-3.5 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:bg-obsidian-950/60 dark:text-slate-300">
                 <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-                  Optimization Analysis:{' '}
+                  {bi('Optimization Analysis: ', '机制分析：')}
                 </span>
-                Benchmarked Full, Patch, Cross-source Mosaic, and input downsampling strategies
-                across Inria Aerial, DeepGlobe, CRAG, and MonuSeg via gradient variance and
-                mean-update utility.
+                {bi(
+                  'Benchmarked Full, Patch, Cross-source Mosaic, and input downsampling strategies across Inria Aerial, DeepGlobe, CRAG, and MonuSeg via gradient variance and mean-update utility.',
+                  '在 Inria、DeepGlobe、CRAG、MonuSeg 四大基准系统对比 Full、Patch、Cross-source Mosaic 与降采样策略，结合梯度方差与 mean-update utility 剖析优化机理。'
+                )}
               </div>
 
               <div className="mt-5 flex items-center gap-2 font-mono text-xs text-slate-600 dark:text-slate-300">
                 <Award className="h-4 w-4 text-emerald-500" />
-                <span>CET-6 English Certified · Async International Collaboration</span>
+                <span>
+                  {bi(
+                    'CET-6 English Certified · Async International Collaboration',
+                    '英语六级 (CET-6) · 流畅英文技术文档与国际远程协作'
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -110,10 +132,10 @@ export function CredentialsSection() {
           <div className="space-y-4 lg:col-span-7">
             <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <GraduationCap className="h-4 w-4 text-cyan-500" />
-              <span>Education &amp; Industry Engineering Track</span>
+              <span>{bi('Education & Industry Engineering Track', '教育背景与工程实践履历')}</span>
             </div>
 
-            {CREDENTIALS.map((cred) => (
+            {credentials.map((cred) => (
               <div
                 key={cred.role}
                 className="rounded-2xl border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-obsidian-900"

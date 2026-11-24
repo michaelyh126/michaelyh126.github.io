@@ -10,12 +10,14 @@ import {
   X,
 } from 'lucide-react';
 import {
+  getProjectCategoryLabel,
+  getProjects,
   PROJECT_CATEGORIES,
-  PROJECTS,
   type ProjectCaseStudy,
   type ProjectCategory,
   type ProjectLaunchLink,
 } from '../data/projects';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { DemoId } from '../demos/registry';
 
 interface ProjectsSectionProps {
@@ -23,21 +25,27 @@ interface ProjectsSectionProps {
 }
 
 export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
+  const { lang, bi } = useLanguage();
+  const projects = getProjects(lang);
+
   const [activeCategory, setActiveCategory] = useState<'All' | ProjectCategory>('All');
-  const [selectedProject, setSelectedProject] = useState<ProjectCaseStudy | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+  const selectedProject: ProjectCaseStudy | null =
+    selectedProjectId ? (projects.find((p) => p.id === selectedProjectId) ?? null) : null;
 
   const filteredProjects =
     activeCategory === 'All'
-      ? PROJECTS
-      : PROJECTS.filter((p) => p.category === activeCategory);
+      ? projects
+      : projects.filter((p) => p.category === activeCategory);
 
   useEffect(() => {
-    if (!selectedProject) return;
+    if (!selectedProjectId) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedProject(null);
+      if (e.key === 'Escape') setSelectedProjectId(null);
     };
     window.addEventListener('keydown', onKeyDown);
 
@@ -45,7 +53,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [selectedProject]);
+  }, [selectedProjectId]);
 
   const handleLinkClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -55,7 +63,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
     e.stopPropagation();
     if (link.sandboxId) {
       e.preventDefault();
-      if (closeModal) setSelectedProject(null);
+      if (closeModal) setSelectedProjectId(null);
       onLaunchDemo(link.sandboxId);
     }
   };
@@ -71,15 +79,21 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               <FolderGit2 className="h-3.5 w-3.5" />
-              <span>9 Original Production Frontends Live · 100% Synthetic Data</span>
+              <span>
+                {bi(
+                  '9 Original Production Frontends Live · 100% Synthetic Data',
+                  '9 套原始生产前端在线直连 · 100% 合成演示数据'
+                )}
+              </span>
             </div>
             <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              Flagship Case Studies &amp; Live Apps
+              {bi('Flagship Case Studies & Live Apps', '代表项目与在线实景应用')}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-              Launch the real compiled production frontends directly in your browser—sanitized with
-              100% synthetic demo data and zero login walls. Click any card to inspect architecture
-              details.
+              {bi(
+                'Launch the real compiled production frontends directly in your browser—sanitized with 100% synthetic demo data and zero login walls. Click any card to inspect architecture details.',
+                '全部采用真实编译的生产级前端直接部署，内置 100% 脱敏合成演示数据、免登录直开。点击任意卡片可查看完整系统架构与攻克难点。'
+              )}
             </p>
           </div>
 
@@ -92,8 +106,8 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
               const active = activeCategory === category;
               const count =
                 category === 'All'
-                  ? PROJECTS.length
-                  : PROJECTS.filter((p) => p.category === category).length;
+                  ? projects.length
+                  : projects.filter((p) => p.category === category).length;
 
               return (
                 <button
@@ -108,7 +122,8 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
                       : 'text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
                   }`}
                 >
-                  {category} <span className="opacity-65">({count})</span>
+                  {getProjectCategoryLabel(category, lang)}{' '}
+                  <span className="opacity-65">({count})</span>
                 </button>
               );
             })}
@@ -120,11 +135,11 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
           {filteredProjects.map((project) => (
             <article
               key={project.id}
-              onClick={() => setSelectedProject(project)}
+              onClick={() => setSelectedProjectId(project.id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  setSelectedProject(project);
+                  setSelectedProjectId(project.id);
                 }
               }}
               tabIndex={0}
@@ -185,7 +200,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
                   )}
                 </div>
 
-                {/* Extra Quick-Launch App Pills (e.g. Salon 4-Terminals, DataHub Admin, SBUPNet) */}
+                {/* Extra Quick-Launch App Pills */}
                 {project.extraLinks && project.extraLinks.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {project.extraLinks.map((extra) => (
@@ -214,7 +229,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
                   </a>
 
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 transition group-hover:text-cyan-700 dark:text-slate-300 dark:group-hover:text-cyan-300">
-                    <span>Specs</span>
+                    <span>{bi('Specs', '架构详情')}</span>
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
@@ -228,7 +243,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
       {selectedProject && (
         <div
           className="no-print fixed inset-0 z-50 flex items-center justify-end bg-slate-950/75 backdrop-blur-sm"
-          onClick={() => setSelectedProject(null)}
+          onClick={() => setSelectedProjectId(null)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="case-study-title"
@@ -261,7 +276,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedProject(null)}
+                onClick={() => setSelectedProjectId(null)}
                 className="rounded-lg border border-slate-300 p-2 text-slate-600 transition hover:border-cyan-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-400 dark:hover:text-white"
                 aria-label="Close case study drawer"
               >
@@ -294,7 +309,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
             <div className="mt-6">
               <h4 className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                 <Layers className="h-4 w-4 text-cyan-500" />
-                <span>System Architecture</span>
+                <span>{bi('System Architecture', '系统架构设计')}</span>
               </h4>
               <ul className="mt-3 space-y-2.5">
                 {selectedProject.architecture.map((line, idx) => (
@@ -313,7 +328,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
             <div className="mt-6">
               <h4 className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span>Engineering Challenges Solved</span>
+                <span>{bi('Engineering Challenges Solved', '攻克的工程难点')}</span>
               </h4>
               <ul className="mt-3 space-y-2.5">
                 {selectedProject.challengesSolved.map((line, idx) => (
@@ -331,7 +346,7 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
             {/* Tech Stack */}
             <div className="mt-6">
               <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Technology Stack
+                {bi('Technology Stack', '核心技术栈')}
               </h4>
               <div className="mt-2.5 flex flex-wrap gap-2">
                 {selectedProject.stack.map((tech) => (
@@ -370,10 +385,10 @@ export function ProjectsSection({ onLaunchDemo }: ProjectsSectionProps) {
 
               <a
                 href="#contact"
-                onClick={() => setSelectedProject(null)}
+                onClick={() => setSelectedProjectId(null)}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-500 hover:text-cyan-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-cyan-400 dark:hover:text-cyan-300"
               >
-                <span>Request Code Walkthrough</span>
+                <span>{bi('Request Code Walkthrough', '预约源码讲解')}</span>
               </a>
             </div>
           </div>

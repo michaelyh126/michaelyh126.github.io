@@ -11,6 +11,7 @@ import {
   Terminal,
   Zap,
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 type DevTab = 'filelock' | 'qacli';
 type LockPolicy = 'handle-v1.0.3' | 'optimistic-depgraph';
@@ -136,6 +137,7 @@ const QA_SCENARIOS: QaScenario[] = [
 ];
 
 export default function DevToolsDemo() {
+  const { bi } = useLanguage();
   const [tab, setTab] = useState<DevTab>('filelock');
   const [policy, setPolicy] = useState<LockPolicy>('handle-v1.0.3');
   const [agents, setAgents] = useState<AgentState[]>(INITIAL_AGENTS);
@@ -293,12 +295,16 @@ export default function DevToolsDemo() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 dark:border-slate-800 dark:bg-obsidian-900">
         <div>
           <h2 className="font-display text-lg font-bold text-slate-950 dark:text-white">
-            Systems Engineering &amp; Automated Visual QA Sandbox
+            {bi(
+              'Systems Engineering & Automated Visual QA Sandbox',
+              '底层系统并发与自动化视觉 QA 沙盒'
+            )}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Explore how <strong>ai-file-lock</strong> prevents multi-agent race conditions at the
-            filesystem mount layer and how <strong>qa-cli</strong> produces verifiable Playwright
-            video audits.
+            {bi(
+              'Explore how ai-file-lock prevents multi-agent race conditions at the filesystem mount layer and how qa-cli produces verifiable Playwright video audits.',
+              '实时模拟 ai-file-lock 如何在 FUSE/WinFsp 挂载层拦截多 Agent 并发写冲突，并检视 qa-cli 自动生成的 Playwright 录屏验收报告。'
+            )}
           </p>
         </div>
 
@@ -313,7 +319,7 @@ export default function DevToolsDemo() {
             }`}
           >
             <FileLock2 className="h-3.5 w-3.5" />
-            <span>ai-file-lock Concurrency Sandbox</span>
+            <span>{bi('ai-file-lock Concurrency Sandbox', 'ai-file-lock 并发沙盒')}</span>
           </button>
           <button
             type="button"
@@ -325,7 +331,7 @@ export default function DevToolsDemo() {
             }`}
           >
             <Film className="h-3.5 w-3.5" />
-            <span>qa-cli Visual E2E Report Viewer</span>
+            <span>{bi('qa-cli Visual E2E Report Viewer', 'qa-cli 视觉 QA 报告检视')}</span>
           </button>
         </div>
       </div>
@@ -343,7 +349,11 @@ export default function DevToolsDemo() {
                 className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-glow transition hover:bg-cyan-500 disabled:opacity-60 dark:bg-cyan-500 dark:text-slate-950"
               >
                 <Zap className="h-3.5 w-3.5" />
-                <span>{stormRunning ? 'Simulating Write Storm...' : 'Trigger Concurrent Write Storm'}</span>
+                <span>
+                  {stormRunning
+                    ? bi('Simulating Write Storm...', '正在模拟并发写风暴...')
+                    : bi('Trigger Concurrent Write Storm', '触发多 Agent 并发写风暴')}
+                </span>
               </button>
 
               <button
@@ -353,7 +363,7 @@ export default function DevToolsDemo() {
                 className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs font-semibold text-slate-700 hover:border-cyan-500 dark:border-slate-700 dark:bg-obsidian-950 dark:text-slate-200"
               >
                 <StepForward className="h-3.5 w-3.5" />
-                <span>Step ({stepNum}/4)</span>
+                <span>{bi(`Step (${stepNum}/4)`, `单步推进 (${stepNum}/4)`)}</span>
               </button>
 
               <button
@@ -362,7 +372,7 @@ export default function DevToolsDemo() {
                 className="inline-flex items-center gap-1 rounded-xl border border-slate-300 px-3 py-2 font-mono text-xs text-slate-600 hover:border-cyan-500 dark:border-slate-700 dark:text-slate-300"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset</span>
+                <span>{bi('Reset', '重置挂载')}</span>
               </button>
             </div>
 
@@ -376,7 +386,7 @@ export default function DevToolsDemo() {
                     : 'text-slate-500'
                 }`}
               >
-                Handle Lock (v1.0.3 Verified)
+                {bi('Handle Lock (v1.0.3 Verified)', '句柄独占锁 (v1.0.3 稳定版)')}
               </button>
               <button
                 type="button"
@@ -387,7 +397,7 @@ export default function DevToolsDemo() {
                     : 'text-slate-500'
                 }`}
               >
-                Optimistic + DepGraph (Exp.)
+                {bi('Optimistic + DepGraph (Exp.)', '乐观提交 + 依赖图 (实验性)')}
               </button>
             </div>
           </div>
@@ -415,7 +425,8 @@ export default function DevToolsDemo() {
                   <span className="text-[10px] text-slate-400">PID {ag.pid}</span>
                 </div>
                 <div className="mt-2 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                  Target: <strong className="text-slate-800 dark:text-slate-200">{ag.targetFile}</strong>
+                  {bi('Target:', '目标文件：')}{' '}
+                  <strong className="text-slate-800 dark:text-slate-200">{ag.targetFile}</strong>
                 </div>
                 <div className="mt-3">
                   <span
@@ -442,17 +453,17 @@ export default function DevToolsDemo() {
           <div className="grid gap-4 lg:grid-cols-12">
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-obsidian-900 lg:col-span-7">
               <h3 className="font-display text-base font-bold">
-                SQLite Active Handle Lock &amp; Version Table
+                {bi('SQLite Active Handle Lock & Version Table', 'SQLite 活跃句柄锁与版本状态表')}
               </h3>
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full text-left font-mono text-xs">
                   <thead className="border-b border-slate-200 text-[10px] uppercase text-slate-400 dark:border-slate-800">
                     <tr>
-                      <th className="py-2">Mounted File</th>
-                      <th className="py-2">Ver / SHA</th>
-                      <th className="py-2">Lock Mode</th>
-                      <th className="py-2">Holder</th>
-                      <th className="py-2 text-right">Blocked Races</th>
+                      <th className="py-2">{bi('Mounted File', '挂载文件')}</th>
+                      <th className="py-2">{bi('Ver / SHA', '版本 / SHA')}</th>
+                      <th className="py-2">{bi('Lock Mode', '锁状态')}</th>
+                      <th className="py-2">{bi('Holder', '持有者')}</th>
+                      <th className="py-2 text-right">{bi('Blocked Races', '拦截冲突')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800">
@@ -491,7 +502,7 @@ export default function DevToolsDemo() {
             <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5 font-mono text-[11px] text-slate-200 lg:col-span-5">
               <div className="mb-2 flex items-center gap-2 text-xs font-bold text-cyan-400">
                 <Terminal className="h-4 w-4" />
-                <span>FUSE / WinFsp Kernel Event Stream</span>
+                <span>{bi('FUSE / WinFsp Kernel Event Stream', 'FUSE / WinFsp 内核挂载事件流')}</span>
               </div>
               <div className="max-h-56 space-y-1.5 overflow-y-auto">
                 {events.map((ev, idx) => (
@@ -520,10 +531,10 @@ export default function DevToolsDemo() {
           {/* Summary KPI Row */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
-              { label: 'Audited Apps', val: '3 Suites' },
-              { label: 'Scenarios Verified', val: '12 / 12' },
-              { label: 'Test Assertions', val: '40 Passed (100%)' },
-              { label: 'Console & Layout Errors', val: '0 Errors' },
+              { label: bi('Audited Apps', '验收应用'), val: bi('3 Suites', '3 套系统') },
+              { label: bi('Scenarios Verified', '通过场景'), val: '12 / 12' },
+              { label: bi('Test Assertions', '断言用例'), val: bi('40 Passed (100%)', '40 项全通过 (100%)') },
+              { label: bi('Console & Layout Errors', '控制台与布局报错'), val: bi('0 Errors', '0 报错') },
             ].map((k) => (
               <div
                 key={k.label}
@@ -573,14 +584,20 @@ export default function DevToolsDemo() {
                 <div className="flex items-center justify-between font-mono text-xs">
                   <span className="flex items-center gap-1.5 text-cyan-400">
                     <Play className="h-3.5 w-3.5" />
-                    <span>Playwright + FFmpeg MP4 Keyframe Inspector</span>
+                    <span>
+                      {bi(
+                        'Playwright + FFmpeg MP4 Keyframe Inspector',
+                        'Playwright + FFmpeg 关键帧录屏检视器'
+                      )}
+                    </span>
                   </span>
                   <span className="text-emerald-400">{selectedQa.keyframes[frameIdx].t}</span>
                 </div>
 
                 <div className="mt-3 rounded-lg border border-slate-800 bg-obsidian-900 p-4 font-mono text-xs">
                   <div className="text-[10px] uppercase text-slate-400">
-                    Frame {frameIdx + 1} / {selectedQa.keyframes.length} · Selector:{' '}
+                    {bi('Frame', '关键帧')} {frameIdx + 1} / {selectedQa.keyframes.length} ·{' '}
+                    {bi('Selector:', '选择器：')}{' '}
                     <span className="text-cyan-300">{selectedQa.keyframes[frameIdx].selector}</span>
                   </div>
                   <div className="mt-1 font-display text-base font-bold text-white">
@@ -614,7 +631,7 @@ export default function DevToolsDemo() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <h4 className="font-mono text-xs font-semibold uppercase text-slate-500">
-                    E2E &amp; DOM Assertions
+                    {bi('E2E & DOM Assertions', 'E2E 与 DOM 自动化断言')}
                   </h4>
                   <ul className="mt-2 space-y-2 text-xs">
                     {selectedQa.assertions.map((a) => (
@@ -628,7 +645,7 @@ export default function DevToolsDemo() {
 
                 <div>
                   <h4 className="font-mono text-xs font-semibold uppercase text-slate-500">
-                    HTTP Request Waterfall
+                    {bi('HTTP Request Waterfall', 'HTTP 请求瀑布流')}
                   </h4>
                   <div className="mt-2 space-y-2 font-mono text-[11px]">
                     {selectedQa.requests.map((r) => (
@@ -658,11 +675,11 @@ export default function DevToolsDemo() {
               <div className="flex flex-wrap items-center gap-4 rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-2.5 font-mono text-[11px] dark:border-slate-800 dark:bg-obsidian-950">
                 <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                   <ShieldAlert className="h-3.5 w-3.5" />
-                  Overflow: {selectedQa.domAudit.overflowPx}px
+                  {bi('Overflow:', '水平溢出：')} {selectedQa.domAudit.overflowPx}px
                 </span>
-                <span>Console Errors: {selectedQa.domAudit.consoleErrors}</span>
-                <span>Broken Images: {selectedQa.domAudit.brokenImages}</span>
-                <span>Typography / CJK Metrics: PASS</span>
+                <span>{bi('Console Errors:', '控制台报错：')} {selectedQa.domAudit.consoleErrors}</span>
+                <span>{bi('Broken Images:', '破损图片：')} {selectedQa.domAudit.brokenImages}</span>
+                <span>{bi('Typography / CJK Metrics: PASS', '中英文排版检测：PASS')}</span>
               </div>
             </div>
           </div>

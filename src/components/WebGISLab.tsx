@@ -38,6 +38,7 @@ import {
   type StationStatus,
 } from '../data/stations';
 import { TelemetryChart, type TelemetryMetric } from './TelemetryChart';
+import { useLanguage } from '../i18n/LanguageContext';
 
 type BasemapId = 'dark-gray' | 'satellite' | 'osm' | 'vector-grid';
 
@@ -83,6 +84,7 @@ function formatDistance(meters: number): string {
 }
 
 export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
+  const { bi } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
 
@@ -566,6 +568,21 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
   };
 
   const statusMeta = STATUS_STYLE[selectedStation.status];
+  const statusLabel =
+    selectedStation.status === 'nominal'
+      ? bi('Nominal', '运行正常')
+      : selectedStation.status === 'advisory'
+        ? bi('Advisory', '趋势关注')
+        : bi('Surge Watch', '风暴潮预警');
+
+  const presetLabelsZh: Record<string, string> = {
+    global: '全球站网',
+    yangtze: '长江口',
+    sfbay: '旧金山湾',
+    northsea: '北海三角洲',
+    chesapeake: '美国东岸',
+    tokyo: '东京湾',
+  };
 
   return (
     <section
@@ -578,15 +595,16 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
           <div>
             <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               <Radio className="h-3.5 w-3.5" />
-              <span>Interactive Engineering Proof · OpenLayers 10</span>
+              <span>{bi('Interactive Engineering Proof · OpenLayers 10', '交互式空间工程实证 · OpenLayers 10')}</span>
             </div>
             <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              Live WebGIS &amp; Coastal Telemetry Lab
+              {bi('Live WebGIS & Coastal Telemetry Lab', '在线 WebGIS 与海岸带遥测实验室')}
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-              Interact with a live OpenLayers engine directly on this page—switch between Esri Dark
-              Gray, Satellite Imagery, OSM, or Vector Grid, measure spherical geodesic distances,
-              and inspect 24-hour synthetic estuarine profiles.
+              {bi(
+                'Interact with a live OpenLayers engine directly on this page—switch between Esri Dark Gray, Satellite Imagery, OSM, or Vector Grid, measure spherical geodesic distances, and inspect 24-hour synthetic estuarine profiles.',
+                '直接在主页交互体验 OpenLayers 10 引擎：无缝切换 Esri 深灰底图、卫星影像、OSM 与离线矢量经纬网，开展球面测地线量测，并点击全球 14 座合成河口站点查看 24 小时潮位、盐度与水温剖面。'
+              )}
             </p>
           </div>
 
@@ -595,7 +613,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
               href="/apps/webgis-workbench/"
               className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white shadow-sm transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
             >
-              <span>Launch Original WebGIS Workbench</span>
+              <span>{bi('Launch Original WebGIS Workbench', '打开原始 WebGIS 工作台')}</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
             {onLaunchFullStudio && (
@@ -604,7 +622,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                 onClick={onLaunchFullStudio}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-3 py-1.5 font-mono text-[11px] font-bold text-cyan-700 transition hover:bg-cyan-600 hover:text-white dark:text-cyan-300 dark:hover:bg-cyan-500 dark:hover:text-slate-950"
               >
-                <span>Swipe Compare Lab</span>
+                <span>{bi('Swipe Compare Lab', '卷帘对比实验室')}</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </button>
             )}
@@ -615,7 +633,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                 onClick={() => handlePreset(preset.id)}
                 className="rounded-lg border border-slate-300/80 bg-white px-2.5 py-1.5 font-mono text-[11px] font-medium text-slate-700 transition hover:border-cyan-500/60 hover:text-cyan-700 dark:border-slate-700/80 dark:bg-obsidian-900 dark:text-slate-300 dark:hover:border-cyan-400/60 dark:hover:text-cyan-300"
               >
-                {preset.label}
+                {bi(preset.label, presetLabelsZh[preset.id] ?? preset.label)}
               </button>
             ))}
           </div>
@@ -630,14 +648,14 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
               {/* Zero-API-key Basemap Switcher */}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="mr-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Basemap:
+                  {bi('Basemap:', '底图：')}
                 </span>
                 {(
                   [
-                    { id: 'dark-gray', label: 'Esri Dark' },
-                    { id: 'satellite', label: 'Satellite' },
+                    { id: 'dark-gray', label: bi('Esri Dark', 'Esri 深灰') },
+                    { id: 'satellite', label: bi('Satellite', '卫星影像') },
                     { id: 'osm', label: 'OSM' },
-                    { id: 'vector-grid', label: 'Vector Grid' },
+                    { id: 'vector-grid', label: bi('Vector Grid', '离线矢量网') },
                   ] as { id: BasemapId; label: string }[]
                 ).map((item) => (
                   <button
@@ -667,7 +685,11 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   }`}
                 >
                   <Ruler className="h-3.5 w-3.5" />
-                  <span>{measureMode ? 'Measuring (Dbl-Click End)' : 'Measure Geodesic'}</span>
+                  <span>
+                    {measureMode
+                      ? bi('Measuring (Dbl-Click End)', '量测中（双击结束）')
+                      : bi('Measure Geodesic', '球面测距')}
+                  </span>
                 </button>
 
                 {(hasMeasurements || measuredMeters > 0) && (
@@ -675,10 +697,10 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                     type="button"
                     onClick={handleClearMeasurements}
                     className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-[11px] font-medium text-slate-600 transition hover:border-rose-500/50 hover:text-rose-600 dark:border-slate-700 dark:bg-obsidian-900 dark:text-slate-300 dark:hover:text-rose-400"
-                    title="Clear measurements"
+                    title={bi('Clear measurements', '清除量测结果')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    <span>Clear</span>
+                    <span>{bi('Clear', '清除')}</span>
                   </button>
                 )}
 
@@ -686,7 +708,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   type="button"
                   onClick={() => handlePreset('global')}
                   className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-1.5 text-slate-600 transition hover:border-cyan-500/60 hover:text-cyan-600 dark:border-slate-700 dark:bg-obsidian-900 dark:text-slate-300 dark:hover:text-cyan-300"
-                  title="Reset Global View"
+                  title={bi('Reset Global View', '重置全球视角')}
                   aria-label="Reset Global View"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -702,13 +724,13 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
               <div className="absolute right-3 top-3 z-10 w-44 rounded-xl border border-slate-700/80 bg-slate-950/95 p-2.5 text-slate-100 shadow-xl backdrop-blur-md">
                 <div className="mb-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-300">
                   <Layers className="h-3 w-3 text-cyan-400" />
-                  <span>Vector Layers</span>
+                  <span>{bi('Vector Layers', '矢量图层控制')}</span>
                 </div>
                 <div className="space-y-1.5 text-[11px] text-slate-100">
                   <label className="flex cursor-pointer items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                      <span>Stations (14)</span>
+                      <span>{bi('Stations (14)', '监测站点 (14)')}</span>
                     </span>
                     <input
                       type="checkbox"
@@ -720,7 +742,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   <label className="flex cursor-pointer items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-sm border border-sky-400 bg-sky-400/30" />
-                      <span>Coastal Zones (6)</span>
+                      <span>{bi('Coastal Zones (6)', '海岸带区划 (6)')}</span>
                     </span>
                     <input
                       type="checkbox"
@@ -732,7 +754,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   <label className="flex cursor-pointer items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5">
                       <span className="h-0.5 w-2.5 bg-emerald-400" />
-                      <span>Transects (4)</span>
+                      <span>{bi('Transects (4)', '水文断面 (4)')}</span>
                     </span>
                     <input
                       type="checkbox"
@@ -744,7 +766,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   <label className="flex cursor-pointer items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5">
                       <span className="h-2 w-2 border border-dashed border-slate-400" />
-                      <span>Graticule</span>
+                      <span>{bi('Graticule', '经纬网格')}</span>
                     </span>
                     <input
                       type="checkbox"
@@ -762,10 +784,14 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   <div className="flex items-center gap-2">
                     <Ruler className="h-3.5 w-3.5 text-amber-400" />
                     <span className="font-semibold">
-                      {measuredMeters > 0 ? formatDistance(measuredMeters) : 'Click map points to measure'}
+                      {measuredMeters > 0
+                        ? formatDistance(measuredMeters)
+                        : bi('Click map points to measure', '点击地图绘制测距点')}
                     </span>
                     {measurePoints > 1 && (
-                      <span className="text-[10px] text-slate-300">({measurePoints} pts · WGS84 Sphere)</span>
+                      <span className="text-[10px] text-slate-300">
+                        ({measurePoints} {bi('pts · WGS84 Sphere', '节点 · WGS84 球面')})
+                      </span>
                     )}
                   </div>
                 </div>
@@ -798,7 +824,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                   className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
                   <MapPin className="h-3.5 w-3.5 text-cyan-500" />
-                  <span>Station Inspector</span>
+                  <span>{bi('Station Inspector', '站点实时检视器')}</span>
                 </label>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold ${statusMeta.badge}`}
@@ -807,7 +833,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ backgroundColor: statusMeta.dot }}
                   />
-                  {statusMeta.label}
+                  {statusLabel}
                 </span>
               </div>
 
@@ -846,20 +872,24 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
 
                 <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200/80 pt-3 font-mono text-[11px] dark:border-slate-800">
                   <div>
-                    <span className="block text-[10px] text-slate-400">COORDINATES</span>
+                    <span className="block text-[10px] text-slate-400">
+                      {bi('COORDINATES', '经纬度坐标')}
+                    </span>
                     <span className="text-slate-800 dark:text-slate-200">
                       {formatCoord(selectedStation.lon, selectedStation.lat)}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[10px] text-slate-400">TIDAL RANGE / DEPTH</span>
+                    <span className="block text-[10px] text-slate-400">
+                      {bi('TIDAL RANGE / DEPTH', '潮差 / 水深')}
+                    </span>
                     <span className="text-slate-800 dark:text-slate-200">
                       {selectedStation.tidalRangeM} m · {selectedStation.depthM} m
                     </span>
                   </div>
                   <div className="col-span-2">
                     <span className="block text-[10px] text-slate-400">
-                      SENSOR SUITE ({selectedStation.samplingRate})
+                      {bi('SENSOR SUITE', '传感器套件')} ({selectedStation.samplingRate})
                     </span>
                     <span className="text-slate-700 dark:text-slate-300">
                       {selectedStation.sensorSuite}
@@ -872,7 +902,7 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
               <div className="mt-4">
                 <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-200">
                   <Activity className="h-3.5 w-3.5 text-emerald-500" />
-                  <span>24-Hour Telemetry Profile</span>
+                  <span>{bi('24-Hour Telemetry Profile', '24 小时连续时序剖面')}</span>
                 </div>
                 <TelemetryChart
                   series={selectedStation.series}
@@ -883,8 +913,10 @@ export function WebGISLab({ onLaunchFullStudio }: WebGISLabProps) {
             </div>
 
             <p className="mt-4 border-t border-slate-200/80 pt-3 font-mono text-[10px] leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
-              100% synthetic estuarine demo dataset (NOAA CO-OPS schema style). Click any marker to
-              animate focus, or open the full-viewport WebGIS Studio for 2018 vs. 2026 swipe compare.
+              {bi(
+                '100% synthetic estuarine demo dataset (NOAA CO-OPS schema style). Click any marker to animate focus, or open the full-viewport WebGIS Studio for 2018 vs. 2026 swipe compare.',
+                '100% 合成河口演示数据集（NOAA CO-OPS 结构风格）。点击地图站点即可平滑飞掠聚焦并更新时序曲线，或进入原始一张图工作台体验完整空间分析。'
+              )}
             </p>
           </div>
         </div>

@@ -1,7 +1,10 @@
 import { ArrowUp, Compass, Github } from 'lucide-react';
-import { PROFILE } from '../data/profile';
+import { getProfile } from '../data/profile';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export function Footer() {
+  const { lang, bi } = useLanguage();
+  const profile = getProfile(lang);
   const year = new Date().getFullYear();
 
   return (
@@ -13,33 +16,36 @@ export function Footer() {
           </span>
           <div>
             <div className="font-display text-sm font-bold text-slate-900 dark:text-white">
-              {PROFILE.name}{' '}
+              {profile.name}{' '}
               <span className="font-mono text-xs font-normal text-slate-500">
                 · 31.2304° N, 121.4737° E
               </span>
             </div>
             <p className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-              © {year} {PROFILE.name} · Built with React 19, TypeScript, Tailwind &amp; OpenLayers 10
+              {bi(
+                `© ${year} ${profile.name} · Built with React 19, TypeScript, Tailwind & OpenLayers 10`,
+                `© ${year} ${profile.name} · 基于 React 19、TypeScript、Tailwind 与 OpenLayers 10 构建`
+              )}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <a
-            href={PROFILE.githubUrl}
+            href={profile.githubUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 font-mono text-xs text-slate-600 transition hover:border-cyan-500/60 hover:text-cyan-700 dark:border-slate-800 dark:text-slate-300 dark:hover:border-cyan-400/60 dark:hover:text-cyan-300"
           >
             <Github className="h-3.5 w-3.5" />
-            <span>@{PROFILE.handle}</span>
+            <span>@{profile.handle}</span>
           </a>
           <a
             href="#top"
             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 font-mono text-xs text-slate-600 transition hover:border-cyan-500/60 hover:text-cyan-700 dark:border-slate-800 dark:text-slate-300 dark:hover:border-cyan-400/60 dark:hover:text-cyan-300"
           >
             <ArrowUp className="h-3.5 w-3.5" />
-            <span>Top</span>
+            <span>{bi('Top', '返回顶部')}</span>
           </a>
         </div>
       </div>

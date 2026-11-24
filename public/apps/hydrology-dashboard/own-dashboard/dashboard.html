@@ -224,6 +224,7 @@
   </div>
 </div>
 
+<script src="../shared-i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/charts.js"></script>
 <script>
@@ -330,7 +331,8 @@ function runDashboard() {
   function clock() {
     const now = new Date();
     setText('clock', now.toTimeString().slice(0, 8));
-    setText('date-display', now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
+    const lc = window.HydroI18n ? HydroI18n.locale() : 'en-US';
+    setText('date-display', now.toLocaleDateString(lc, { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }));
   }
   setInterval(clock, 1000); clock();
 
@@ -628,11 +630,13 @@ function runDashboard() {
   });
 
   // ════════ 引导 ════════
-  window.addEventListener('load', async () => {
+  function hideLoading() { const ld = document.getElementById('loading'); if (ld) { ld.classList.add('hidden'); ld.style.display = 'none'; ld.remove(); } }
+  setTimeout(hideLoading, 2500);
+  async function bootOwnDashboard() {
     if (!HydroAPI.isAuthenticated()) return;
     initMap();
     setStatus(true, '连接中...');
-    const minDelay = new Promise(r => setTimeout(r, 700));
+    const minDelay = new Promise(r => setTimeout(r, 120));
     const [settled] = await Promise.all([
       Promise.allSettled([loadSummary(), loadStations(), loadOverlay()]),
       minDelay,
@@ -644,10 +648,9 @@ function runDashboard() {
     if (state.station) { await loadObsPanels(); }
     HydroCharts.resizeAll();
 
-    const loading = document.getElementById('loading');
-    loading.classList.add('hidden');
-    setTimeout(() => loading.remove(), 600);
-  });
+    hideLoading();
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bootOwnDashboard); } else { bootOwnDashboard(); }
 }
 </script>
 </body>

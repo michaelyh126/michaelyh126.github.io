@@ -1,16 +1,13 @@
 /**
- * HydroQCharts —— query-web R6 公网查询平台 ECharts5 构造器（不引 ECharts GL）。
- *
- *  - renderSeries : /api/query/series 标量时序折线（points:[[iso,value]]，time 轴）
- *  - renderProfile: /api/query/profile own 剖面热力（time × depth_layer，value 定色，qc tooltip）
- *
- * 语义纪律：剖面 depth_axis="layer" 只标层号（水深门禁默认关，不派生实际水深 m）；
- * 哨兵 -1 语义保留（depth_layer/pile_no=-1 表示维度不适用）；qc=0=质量未知（own）/ qc_flag（app）。
- * 颜色一律走 cssVar()，不硬编码色值；实例按容器 id 缓存，复用 echarts.getInstanceByDom。
+ * HydroQCharts — query-web ECharts5 Bilingual Visualizer (EN default / ZH toggle)
  */
 (function (global) {
   'use strict';
-  if (!global.echarts) { console.error('[query-web] echarts 未加载'); }
+  if (!global.echarts) { console.error('[query-web] echarts not loaded'); }
+
+  function isZh() { return global.HydroI18n ? global.HydroI18n.isZh() : false; }
+  function pick(en, zh) { return isZh() ? zh : en; }
+  function loc() { return isZh() ? 'zh-CN' : 'en-US'; }
 
   const rootEl = document.documentElement;
   function cssVar(name) { return getComputedStyle(rootEl).getPropertyValue(name).trim() || name; }
@@ -34,14 +31,14 @@
     instances.set(id, inst);
     return inst;
   }
-  function resizeAll() { instances.forEach(i => { try { i.resize(); } catch (e) { /* */ } }); }
+  function resizeAll() { instances.forEach(i => { try { i.resize(); } catch (e) {} }); }
   function clear(id) { const el = document.getElementById(id); if (!el) return; const i = global.echarts.getInstanceByDom(el); if (i) i.clear(); }
 
   function fmtTime(iso) {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return String(iso);
-    return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' +
-      d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return d.toLocaleDateString(loc(), { month: '2-digit', day: '2-digit' }) + ' ' +
+      d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
   const baseTooltip = () => ({
@@ -54,10 +51,6 @@
   const axisLineStyle = () => ({ lineStyle: { color: rgba(cssVar('--blue-light'), 0.2) } });
   const splitLineStyle = () => ({ lineStyle: { color: rgba(cssVar('--blue-light'), 0.08), type: 'dashed' } });
 
-  // ════════════════════════════════════════════════════════
-  //  1) series 标量时序折线
-  //  data: {station_id, metric, interval, system, available, points:[[iso,value]], qc_note}
-  // ════════════════════════════════════════════════════════
   function renderSeries(id, data) {
     const inst = chart(id); if (!inst) return;
     const pts = (data && data.points) || [];
@@ -98,11 +91,6 @@
     }, true);
   }
 
-  // ════════════════════════════════════════════════════════
-  //  2) profile own 剖面热力（time × depth_layer）
-  //  data: {depth_axis:"layer", points:[{time,depth_layer,beam,pile_no,view_point,value,qc}]}
-  //  哨兵 -1（depth_layer/pile_no=-1）语义保留，仅按层号呈现，不派生实际水深 m。
-  // ════════════════════════════════════════════════════════
   function renderProfile(id, data) {
     const inst = chart(id); if (!inst) return;
     const pts = (data && data.points) || [];
@@ -135,15 +123,15 @@
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], val = v[2], q = v[3];
-          const state = (val !== null && val !== undefined) ? `<b>${Number(val)}</b>` : '空值(null)';
-          const qcTxt = (q === 0) ? 'qc=0 质量未知' : (q === null || q === undefined ? 'qc 无' : 'qc=' + q);
-          return `${xLabels[ti] || ''}<br/>层号 <b>${yLabels[li] || ''}</b><br/>${state}<br/><span style="color:${cssVar('--muted')}">${qcTxt}</span>`;
+          const state = (val !== null && val !== undefined) ? `<b>${Number(val)}</b>` : pick('Null', '空值(null)');
+          const qcTxt = (q === 0) ? pick('qc=0 unknown', 'qc=0 质量未知') : (q === null || q === undefined ? pick('qc N/A', 'qc 无') : 'qc=' + q);
+          return `${xLabels[ti] || ''}<br/>${pick('Layer', '层号')} <b>${yLabels[li] || ''}</b><br/>${state}<br/><span style="color:${cssVar('--muted')}">${qcTxt}</span>`;
         },
       }),
       visualMap: {
         type: 'continuous', min: vmin, max: vmax, dimension: 2, seriesIndex: 0,
         calculable: true, orient: 'horizontal', left: 'center', bottom: 0, itemWidth: 10, itemHeight: 60,
-        text: ['高', '低'], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
         inRange: { color: SCALE_STOPS }, show: hasVal,
       },
       xAxis: {
@@ -151,12 +139,12 @@
         axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }),
       },
       yAxis: {
-        type: 'category', data: yLabels, name: '层号',
+        type: 'category', data: yLabels, name: pick('Layer', '层号'),
         nameTextStyle: { color: cssVar('--muted'), fontSize: 9 },
         axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: axisLabelStyle(),
       },
       series: [{
-        type: 'custom', name: '剖面',
+        type: 'custom', name: pick('Profile', '剖面'),
         renderItem: (params, api) => {
           const val = api.value(2);
           const center = api.coord([api.value(0), api.value(1)]);

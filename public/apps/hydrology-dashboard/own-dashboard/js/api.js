@@ -1,10 +1,11 @@
 /**
- * HydroAPI (own-dashboard) — Deterministic 100% Synthetic Field Station Telemetry Engine (Demo Mode)
- * Powers ADCP depth-layer heatmaps, U/V vector arrows, polar wave roses, multi-pile water quality,
- * read-only global overlay, and synthetic coastal phenology SVG thumbnail gallery + lightbox.
+ * HydroAPI (own-dashboard) — Deterministic 100% Synthetic Bilingual Field Station Telemetry Engine
  */
 (function (global) {
   'use strict';
+
+  function isZh() { return global.HydroI18n ? global.HydroI18n.isZh() : false; }
+  function pick(en, zh) { return isZh() ? zh : en; }
 
   function hashSeed(str) {
     let h = 2166136261 >>> 0;
@@ -15,27 +16,27 @@
     return h;
   }
 
-  const FIELD_STATIONS = [
-    { station_id: 'FLD-ADCP-01', name: '北槽座底 ADCP 剖面潜标', station_type: 'adcp', lat: 31.12, lng: 122.04, is_mobile: false },
-    { station_id: 'FLD-WAVE-02', name: '东海湾外缘测波浮标', station_type: 'wave', lat: 30.86, lng: 122.42, is_mobile: false },
-    { station_id: 'FLD-WQ-03', name: '潮滩多桩号水质阵列', station_type: 'wq', lat: 30.96, lng: 121.88, is_mobile: false },
-    { station_id: 'FLD-TIDE-04', name: '岛礁高精度雷达验潮站', station_type: 'tide', lat: 30.68, lng: 122.26, is_mobile: false },
-    { station_id: 'FLD-PHEN-05', name: '盐沼湿地物候观测塔', station_type: 'phenology', lat: 31.02, lng: 121.82, is_mobile: false },
-    { station_id: 'FLD-MET-06', name: '海上梯度气象观测平台', station_type: 'met', lat: 30.78, lng: 122.54, is_mobile: false },
-    { station_id: 'FLD-ADCP-07', name: '走航式 ADCP 断面观测船', station_type: 'adcp', lat: 30.90, lng: 122.18, is_mobile: true },
-    { station_id: 'FLD-WQ-08', name: '南翼盐水入侵监测浮标', station_type: 'wq', lat: 30.62, lng: 121.92, is_mobile: false },
+  const FIELD_STATIONS_RAW = [
+    { station_id: 'FLD-ADCP-01', en: 'North Channel Bottom ADCP Mooring', zh: '北槽座底 ADCP 剖面潜标', station_type: 'adcp', lat: 31.12, lng: 122.04, is_mobile: false },
+    { station_id: 'FLD-WAVE-02', en: 'Outer Bay Directional Wave Buoy', zh: '东海湾外缘测波浮标', station_type: 'wave', lat: 30.86, lng: 122.42, is_mobile: false },
+    { station_id: 'FLD-WQ-03', en: 'Intertidal Multi-Pile WQ Array', zh: '潮滩多桩号水质阵列', station_type: 'wq', lat: 30.96, lng: 121.88, is_mobile: false },
+    { station_id: 'FLD-TIDE-04', en: 'Island Reef Radar Tide Gauge', zh: '岛礁高精度雷达验潮站', station_type: 'tide', lat: 30.68, lng: 122.26, is_mobile: false },
+    { station_id: 'FLD-PHEN-05', en: 'Saltmarsh Phenology Camera Tower', zh: '盐沼湿地物候观测塔', station_type: 'phenology', lat: 31.02, lng: 121.82, is_mobile: false },
+    { station_id: 'FLD-MET-06', en: 'Offshore Gradient Met Platform', zh: '海上梯度气象观测平台', station_type: 'met', lat: 30.78, lng: 122.54, is_mobile: false },
+    { station_id: 'FLD-ADCP-07', en: 'Mobile Underway ADCP Survey Vessel', zh: '走航式 ADCP 断面观测船', station_type: 'adcp', lat: 30.90, lng: 122.18, is_mobile: true },
+    { station_id: 'FLD-WQ-08', en: 'South Wing Saltwater Intrusion Buoy', zh: '南翼盐水入侵监测浮标', station_type: 'wq', lat: 30.62, lng: 121.92, is_mobile: false },
   ];
 
-  const OVERLAY_BASINS = [
-    { code: 'east_bay', name_cn: '东海湾参考区', name_en: 'East Bay Reference', center_lat: 30.88, center_lng: 122.05, box_deg: 1.6 },
-    { code: 'south_shelf', name_cn: '南湾陆架参考区', name_en: 'South Shelf Reference', center_lat: 22.15, center_lng: 114.12, box_deg: 1.8 },
+  const OVERLAY_BASINS_RAW = [
+    { code: 'east_bay', en: 'East Bay Reference Zone', zh: '东海湾参考区', center_lat: 30.88, center_lng: 122.05, box_deg: 1.6 },
+    { code: 'south_shelf', en: 'South Shelf Reference Zone', zh: '南湾陆架参考区', center_lat: 22.15, center_lng: 114.12, box_deg: 1.8 },
   ];
 
-  const OVERLAY_STATIONS = [
-    { id: 'REF-01', name: '参考潮位站 N1', source: 'coops', station_type: 'tide', lat: 31.22, lng: 121.74 },
-    { id: 'REF-02', name: '参考气象浮标 E2', source: 'jodc', station_type: 'met', lat: 30.72, lng: 122.66 },
-    { id: 'REF-03', name: '参考港口验潮站 S3', source: 'hko', station_type: 'tide', lat: 30.48, lng: 121.82 },
-    { id: 'REF-04', name: '参考陆架交换站 E4', source: 'isd', station_type: 'met', lat: 31.34, lng: 122.38 },
+  const OVERLAY_STATIONS_RAW = [
+    { id: 'REF-01', en: 'Reference Tide Gauge N1', zh: '参考潮位站 N1', source: 'coops', station_type: 'tide', lat: 31.22, lng: 121.74 },
+    { id: 'REF-02', en: 'Reference Met Buoy E2', zh: '参考气象浮标 E2', source: 'jodc', station_type: 'met', lat: 30.72, lng: 122.66 },
+    { id: 'REF-03', en: 'Reference Harbor Gauge S3', zh: '参考港口验潮站 S3', source: 'hko', station_type: 'tide', lat: 30.48, lng: 121.82 },
+    { id: 'REF-04', en: 'Reference Shelf Exchange E4', zh: '参考陆架交换站 E4', source: 'isd', station_type: 'met', lat: 31.34, lng: 122.38 },
   ];
 
   function notify(type, msg) {
@@ -59,13 +60,10 @@
     const coverage = [];
     const qc = [];
     for (let ti = 0; ti < nTimes; ti++) {
-      const rowV = [];
-      const rowC = [];
-      const rowQ = [];
+      const rowV = [], rowC = [], rowQ = [];
       const h = (startMs + ti * step) / 3600000;
       const tide = Math.abs(Math.sin((2 * Math.PI * h) / 12.42 + phase));
       for (let li = 0; li < layers.length; li++) {
-        // Showcase realistic missing-coverage & null-value cell states
         if (li === 11 && (ti === 6 || ti === 7 || ti === 19)) {
           rowV.push(null); rowC.push(0); rowQ.push(null);
           continue;
@@ -124,7 +122,7 @@
     }
     return {
       station_id: stationId,
-      dir_convention: 'atan2(U_east, V_north)，罗盘度 [0, 360)',
+      dir_convention: pick('atan2(U_east, V_north), compass deg [0, 360)', 'atan2(U_east, V_north)，罗盘度 [0, 360)'),
       speed_unit: 'm/s',
       points,
     };
@@ -144,7 +142,7 @@
       { min: 1.5, max: 2.5 },
       { min: 2.5, max: null },
     ];
-    const primaryIdx = 5 + (seed % 3); // ESE / SE / SSE dominant coastal swell
+    const primaryIdx = 5 + (seed % 3);
     const secondaryIdx = (primaryIdx + 8) % 16;
     const freq_matrix = [];
     let total = 0;
@@ -214,7 +212,10 @@
       time_token: tok,
       ptz: (idx % 3) + 1,
       is_image: true,
-      tz_assumption: 'UTC+8 合成物候演示时间戳（不对应真实野外图像）',
+      tz_assumption: pick(
+        'Synthetic demo phenology frames (simulated UTC+8 clock)',
+        'UTC+8 合成物候演示时间戳（不对应真实野外图像）'
+      ),
     }));
     return { station_id: stationId, calendar, items, total: items.length };
   }
@@ -262,32 +263,58 @@
     query = query || {};
     if (path === '/dashboard/summary') {
       return {
-        visible_stations: FIELD_STATIONS.length,
+        visible_stations: FIELD_STATIONS_RAW.length,
         sampling_points: 142860,
         active_alerts: 2,
         latest_obs_time: new Date(Date.now() - 90 * 1000).toISOString(),
       };
     }
     if (path === '/dashboard/stations') {
-      return { items: FIELD_STATIONS.slice(), total: FIELD_STATIONS.length };
+      const items = FIELD_STATIONS_RAW.map((s) => ({
+        station_id: s.station_id,
+        name: pick(s.en, s.zh),
+        station_type: s.station_type,
+        lat: s.lat,
+        lng: s.lng,
+        is_mobile: s.is_mobile,
+      }));
+      return { items, total: items.length };
     }
     if (path === '/overlay/global-stations') {
-      return { available: true, estuaries: OVERLAY_BASINS, stations: OVERLAY_STATIONS };
+      return {
+        available: true,
+        estuaries: OVERLAY_BASINS_RAW.map((b) => ({
+          code: b.code,
+          name_cn: pick(b.en, b.zh),
+          name_en: b.en,
+          center_lat: b.center_lat,
+          center_lng: b.center_lng,
+          box_deg: b.box_deg,
+        })),
+        stations: OVERLAY_STATIONS_RAW.map((s) => ({
+          id: s.id,
+          name: pick(s.en, s.zh),
+          source: s.source,
+          station_type: s.station_type,
+          lat: s.lat,
+          lng: s.lng,
+        })),
+      };
     }
     if (path === '/obs/profile-grid') {
-      return buildProfileGrid(query.station_id || FIELD_STATIONS[0].station_id, query.metric || 'adcp_speed', query.start, query.end);
+      return buildProfileGrid(query.station_id || FIELD_STATIONS_RAW[0].station_id, query.metric || 'adcp_speed', query.start, query.end);
     }
     if (path === '/obs/vector-field') {
-      return buildVectorField(query.station_id || FIELD_STATIONS[0].station_id, query.start, query.end);
+      return buildVectorField(query.station_id || FIELD_STATIONS_RAW[0].station_id, query.start, query.end);
     }
     if (path === '/obs/wave-rose') {
-      return buildWaveRose(query.station_id || FIELD_STATIONS[0].station_id);
+      return buildWaveRose(query.station_id || FIELD_STATIONS_RAW[0].station_id);
     }
     if (path === '/obs/wq-piles') {
-      return buildWqPiles(query.station_id || FIELD_STATIONS[0].station_id, query.metric || 'salinity_psu', query.start, query.end);
+      return buildWqPiles(query.station_id || FIELD_STATIONS_RAW[0].station_id, query.metric || 'salinity_psu', query.start, query.end);
     }
     if (path === '/files/phenology') {
-      return buildPhenology(query.station_id || FIELD_STATIONS[0].station_id, query.date);
+      return buildPhenology(query.station_id || FIELD_STATIONS_RAW[0].station_id, query.date);
     }
     return {};
   }
@@ -319,7 +346,6 @@
   }
 
   const ROLE_LEVEL = { viewer: 0, operator: 1, admin: 2 };
-  const ROLE_LABELS = { viewer: '访客', operator: '运维人员', admin: '管理员' };
 
   global.HydroAPI = {
     base: 'synthetic://own-dashboard',
@@ -333,11 +359,11 @@
     getUsername: () => 'field_ops_demo',
     isAuthenticated: () => true,
     hasRole: () => true,
-    roleLabel: (r) => ROLE_LABELS[r] || r || '管理员',
+    roleLabel: (r) => pick(r || 'Admin', r === 'admin' ? '管理员' : '运维人员'),
     ROLE_LEVEL,
-    ROLE_LABELS,
+    ROLE_LABELS: { viewer: 'Viewer', operator: 'Operator', admin: 'Admin' },
     login: async () => ({ access_token: 'demo-own-token' }),
-    logout: () => notify('info', '演示模式已自动登录，无需退出'),
+    logout: () => notify('info', pick('Auto-authenticated in Demo Mode', '演示模式已自动登录，无需退出')),
     requireAuth: () => true,
     requireRole: () => true,
     message: {

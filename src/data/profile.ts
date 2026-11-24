@@ -1,3 +1,5 @@
+import type { Lang } from '../i18n/LanguageContext';
+
 export interface PlatformLink {
   id: 'upwork' | 'fiverr' | 'wellfound' | 'linkedin' | 'github';
   label: string;
@@ -35,7 +37,7 @@ export interface ProfileConfig {
 
 /**
  * ============================================================================
- * CENTRALIZED PROFILE & LINK CONFIGURATION
+ * CENTRALIZED PROFILE & LINK CONFIGURATION (English default + Chinese support)
  * Update your Email, Upwork, Fiverr, Wellfound, or LinkedIn URLs here once,
  * and every CTA, Contact card, Navigation link, and Resume header updates.
  * ============================================================================
@@ -110,11 +112,81 @@ export const PROFILE: ProfileConfig = {
     },
     {
       value: '128-Proc',
-      label: 'OS Author · ai-file-lock',
+      label: 'Author · ai-file-lock',
       detail: 'FUSE / WinFsp Concurrency Guard',
     },
   ],
 };
+
+export function getProfile(lang: Lang): ProfileConfig {
+  if (lang === 'en') return PROFILE;
+
+  return {
+    ...PROFILE,
+    name: '杨昊 · Hao Yang',
+    role: 'WebGIS 空间信息与全栈系统工程师',
+    shortRole: 'WebGIS · 时序数据 · 全栈 SaaS',
+    headline: '专注高精度 WebGIS 工作台、实时数据平台与可验证的全栈 SaaS 工程。',
+    subheadline:
+      '计算机科学与技术硕士在读，IEEE SMC 2026 第一作者。长期面向科研机构、气候科技、物流与商业团队交付交互式 OpenLayers / MapLibre 地图应用、高密度时序监测平台及配套 Playwright 录屏 E2E 验收的全栈系统。',
+    availabilityBadge: '开放远程合同与项目合作 · UTC+8 支持全球异步协作',
+    location: '中国 · 上海',
+    timezone: 'UTC+8 (北京时间)',
+    timezoneOverlap: '每日可与欧洲上午 (CET/GMT) 及美西傍晚 (PST) 实时沟通',
+    responseTime: '12 小时内响应',
+    platforms: PROFILE.platforms.map((p) => {
+      const zhMap: Record<PlatformLink['id'], { handle: string; note: string }> = {
+        github: {
+          handle: '@michaelyh126',
+          note: '个人主页、9 大实景演示前端入口与自动化测试实践',
+        },
+        upwork: {
+          handle: '按小时或里程碑托管',
+          note: '适合海外 WebGIS、FastAPI 与 React 全栈合同项目',
+        },
+        fiverr: {
+          handle: '标准化短周期交付',
+          note: 'OpenLayers 地图组件、GeoTIFF 切片流水线与 MVP 快启',
+        },
+        wellfound: {
+          handle: '远程初创团队合作',
+          note: '适合远程空间信息与全栈工程顾问或长期合同',
+        },
+        linkedin: {
+          handle: 'Hao Yang · 计算机硕士',
+          note: '学术论文成果、工程履历与商务直连',
+        },
+      };
+      return {
+        ...p,
+        handle: zhMap[p.id].handle,
+        note: zhMap[p.id].note,
+      };
+    }),
+    credibilityMetrics: [
+      {
+        value: 'CS 硕士',
+        label: '上海海洋大学 (2027 届)',
+        detail: '本科：空间信息与数字技术',
+      },
+      {
+        value: 'IEEE SMC ’26',
+        label: '第一作者 · SBUPNet',
+        detail: 'Inria 76.5% mIoU @ 9.49 FPS',
+      },
+      {
+        value: '18 数据源',
+        label: '约 2.5 万站点落地',
+        detail: 'TimescaleDB + FastAPI 时序平台',
+      },
+      {
+        value: '128 并发',
+        label: '作者 · ai-file-lock',
+        detail: 'FUSE / WinFsp 挂载并发保护',
+      },
+    ],
+  };
+}
 
 export function getPlatformHref(platform: PlatformLink): {
   href: string;

@@ -8,8 +8,9 @@ import {
   Terminal,
   Video,
 } from 'lucide-react';
-import { PROFILE } from '../data/profile';
-import { LIVE_APPS } from '../data/liveApps';
+import { getProfile } from '../data/profile';
+import { getLiveApps } from '../data/liveApps';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { DemoId } from '../demos/registry';
 
 interface HeroProps {
@@ -18,11 +19,15 @@ interface HeroProps {
 }
 
 export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
-  const geoAndAiApps = LIVE_APPS.filter(
+  const { lang, bi } = useLanguage();
+  const profile = getProfile(lang);
+  const liveApps = getLiveApps(lang);
+
+  const geoAndAiApps = liveApps.filter(
     (a) => a.category === 'Geospatial & Data' || a.id === 'sound-ai'
   );
-  const salonApps = LIVE_APPS.filter((a) => a.category === 'Salon 4-Terminal SaaS');
-  const cliSandboxes = LIVE_APPS.filter((a) => !a.isOriginal);
+  const salonApps = liveApps.filter((a) => a.category === 'Salon 4-Terminal SaaS');
+  const cliSandboxes = liveApps.filter((a) => !a.isOriginal);
 
   return (
     <section
@@ -40,15 +45,15 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <span>{PROFILE.availabilityBadge}</span>
+              <span>{profile.availabilityBadge}</span>
             </div>
 
-            <h1 className="mt-6 font-display text-4xl font-bold leading-[1.08] tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.35rem]">
-              {PROFILE.headline}
+            <h1 className="mt-6 font-display text-4xl font-bold leading-[1.12] tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.3rem]">
+              {profile.headline}
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-              {PROFILE.subheadline}
+              {profile.subheadline}
             </p>
 
             {/* Primary CTAs */}
@@ -58,7 +63,7 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-glow hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
               >
                 <Play className="h-4 w-4 fill-current" />
-                <span>Explore 9 Live Production Apps</span>
+                <span>{bi('Explore 9 Live Production Apps', '体验 9 套上线实景前端')}</span>
                 <ArrowDownRight className="h-4 w-4" />
               </a>
 
@@ -66,7 +71,7 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 href="#contact"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white/95 px-5 py-3 text-sm font-semibold text-slate-900 hover:border-cyan-500/60 hover:text-cyan-700 dark:border-slate-700 dark:bg-obsidian-850/95 dark:text-white dark:hover:border-cyan-400/60 dark:hover:text-cyan-300"
               >
-                <span>Book / Discuss a Project</span>
+                <span>{bi('Book / Discuss a Project', '咨询 / 预约项目合作')}</span>
                 <ArrowRight className="h-4 w-4" />
               </a>
 
@@ -76,7 +81,7 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
                 className="inline-flex items-center gap-2 rounded-xl px-3.5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-200/60 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-white"
               >
                 <FileText className="h-4 w-4" />
-                <span>Inspect 1-Page CV</span>
+                <span>{bi('Inspect 1-Page CV', '查看单页英文简历')}</span>
               </button>
             </div>
           </div>
@@ -87,10 +92,10 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
               <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-slate-800">
                 <div className="flex items-center gap-2 font-mono text-xs font-semibold text-slate-700 dark:text-slate-200">
                   <Terminal className="h-4 w-4 text-cyan-500" />
-                  <span>LIVE_PRODUCTION_APPS (9)</span>
+                  <span>{bi('LIVE_PRODUCTION_APPS (9)', '上线实景前端直达 (9 套)')}</span>
                 </div>
                 <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-                  100% Synthetic
+                  {bi('100% Synthetic', '100% 合成数据')}
                 </span>
               </div>
 
@@ -118,8 +123,8 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
               {/* 4-Terminal Salon SaaS Strip */}
               <div className="mt-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-obsidian-950/60">
                 <div className="mb-1.5 flex items-center justify-between font-mono text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                  <span>SALON 4-TERMINAL SAAS (LIVE SYNCED)</span>
-                  <span className="text-cyan-600 dark:text-cyan-400">4 APPS</span>
+                  <span>{bi('SALON 4-TERMINAL SAAS (LIVE SYNCED)', '美发四端商业 SAAS（实时同步）')}</span>
+                  <span className="text-cyan-600 dark:text-cyan-400">{bi('4 APPS', '4 终端')}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
                   {salonApps.map((app) => (
@@ -157,11 +162,11 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
               <div className="mt-4 grid grid-cols-1 gap-2.5 border-t border-slate-200/80 pt-3.5 dark:border-slate-800 sm:grid-cols-2">
                 <div className="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-obsidian-850 dark:text-slate-300">
                   <Video className="h-4 w-4 shrink-0 text-cyan-500" />
-                  <span>Playwright + FFmpeg QA</span>
+                  <span>{bi('Playwright + FFmpeg QA', 'Playwright 录屏验收')}</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-obsidian-850 dark:text-slate-300">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                  <span>{PROFILE.responseTime} · UTC+8</span>
+                  <span>{profile.responseTime} · UTC+8</span>
                 </div>
               </div>
             </div>
@@ -170,7 +175,7 @@ export function Hero({ onOpenResume, onLaunchDemo }: HeroProps) {
 
         {/* Verified Credibility Bar */}
         <div className="mt-12 grid grid-cols-2 gap-3 sm:mt-14 lg:grid-cols-4 lg:gap-4">
-          {PROFILE.credibilityMetrics.map((metric) => (
+          {profile.credibilityMetrics.map((metric) => (
             <div
               key={metric.label}
               className="rounded-xl border border-slate-200/90 bg-white/85 p-4 backdrop-blur-sm hover:border-cyan-500/40 dark:border-slate-800/90 dark:bg-obsidian-900/80"

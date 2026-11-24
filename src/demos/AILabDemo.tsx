@@ -8,6 +8,7 @@ import {
   Layers,
   Trash2,
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 type LabTab = 'spectrogram' | 'sbupnet';
 
@@ -96,7 +97,8 @@ function spectrogramColor(val: number): [number, number, number] {
 }
 
 export default function AILabDemo() {
-  const [tab, setTab] = useState<LabTab>('spectrogram');
+  const { bi } = useLanguage();
+  const [tab, setTab] = useState<LabTab>('sbupnet');
 
   // Spectrogram Workbench State
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -298,33 +300,45 @@ export default function AILabDemo() {
     URL.revokeObjectURL(url);
   };
 
+  const stageZh: Record<string, { title: string; detail: string }> = {
+    '01': {
+      title: '全局语义上下文分支',
+      detail: '对超高分辨率遥感影像（5000×5000 → 1/4 尺度）进行轻量全局前向推理，快速提取道路、建筑等宏观拓扑结构。',
+    },
+    '02': {
+      title: '像素不确定性估计器',
+      detail: '直接基于全局 logits 计算逐像素预测熵，精准锁定细碎目标边缘与高歧义边界，跳过大片均匀背景区域。',
+    },
+    '03': {
+      title: 'Top-K 不确定区域选择性路由',
+      detail: '仅将最高不确定性的局部区域送入高分辨率细化分支，相比整图双分支显著降低约 35% 训练耗时与峰值显存。',
+    },
+    '04': {
+      title: '不确定性引导融合头',
+      detail: '仅在不确定像素坐标精准回注高分辨率边界特征，在 Inria Aerial 上实现 76.5% mIoU 与 9.49 FPS 实时吞吐。',
+    },
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4 sm:p-6">
       {/* Header & Tab Switch */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 dark:border-slate-800 dark:bg-obsidian-900">
         <div>
           <h2 className="font-display text-lg font-bold text-slate-950 dark:text-white">
-            AI Annotation Workbench &amp; SBUPNet Research Lab
+            {bi(
+              'SBUPNet Research Lab & Acoustic Spectrogram Workbench',
+              'SBUPNet 论文实验台与生物声学标注沙盒'
+            )}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Click-and-drag to label procedurally synthesized acoustic signals or explore the
-            published IEEE SMC 2026 <strong>SBUPNet</strong> accuracy/speed trade-off.
+            {bi(
+              'Explore the published IEEE SMC 2026 SBUPNet accuracy/speed Pareto frontier or click-and-drag to label procedurally synthesized acoustic signals.',
+              '交互式检视 IEEE SMC 2026 录用论文 SBUPNet 的精度-速度帕累托前沿与网络架构，或体验浏览器端合成声谱图拉框标注。'
+            )}
           </p>
         </div>
 
         <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1 font-mono text-xs dark:border-slate-800 dark:bg-obsidian-950">
-          <button
-            type="button"
-            onClick={() => setTab('spectrogram')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 font-bold transition ${
-              tab === 'spectrogram'
-                ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950'
-                : 'text-slate-600 dark:text-slate-300'
-            }`}
-          >
-            <AudioWaveform className="h-3.5 w-3.5" />
-            <span>Spectrogram Annotator</span>
-          </button>
           <button
             type="button"
             onClick={() => setTab('sbupnet')}
@@ -335,7 +349,19 @@ export default function AILabDemo() {
             }`}
           >
             <BookOpen className="h-3.5 w-3.5" />
-            <span>SBUPNet (IEEE SMC ’26)</span>
+            <span>{bi('SBUPNet (IEEE SMC ’26)', 'SBUPNet 论文基准 (IEEE ’26)')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('spectrogram')}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 font-bold transition ${
+              tab === 'spectrogram'
+                ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950'
+                : 'text-slate-600 dark:text-slate-300'
+            }`}
+          >
+            <AudioWaveform className="h-3.5 w-3.5" />
+            <span>{bi('Spectrogram Annotator', '声谱图拉框标注')}</span>
           </button>
         </div>
       </div>
@@ -365,7 +391,7 @@ export default function AILabDemo() {
 
               <div className="flex items-center gap-3 font-mono text-xs">
                 <label className="flex items-center gap-1.5">
-                  <span className="text-slate-400">Gain</span>
+                  <span className="text-slate-400">{bi('Gain', '增益')}</span>
                   <input
                     type="range"
                     min={0.7}
@@ -383,7 +409,7 @@ export default function AILabDemo() {
                     onChange={(e) => setShowGrid(e.target.checked)}
                     className="accent-cyan-500"
                   />
-                  <span>Grid</span>
+                  <span>{bi('Grid', '网格')}</span>
                 </label>
               </div>
             </div>
@@ -400,8 +426,13 @@ export default function AILabDemo() {
                 className="block h-auto w-full cursor-crosshair select-none"
               />
               <div className="flex justify-between border-t border-slate-800 bg-slate-950/95 px-3 py-1.5 font-mono text-[10px] text-slate-400">
-                <span>0.0 s (Y-axis: 0 – 12.0 kHz) · Click &amp; drag anywhere to draw box</span>
-                <span>10.0 s · 100% Procedurally Synthesized Signal</span>
+                <span>
+                  {bi(
+                    '0.0 s (Y-axis: 0 – 12.0 kHz) · Click & drag anywhere to draw box',
+                    '0.0 s（纵轴 0 – 12.0 kHz）· 在画布任意处按住拖拽即可新建标注框'
+                  )}
+                </span>
+                <span>{bi('10.0 s · 100% Procedurally Synthesized Signal', '10.0 s · 100% 数学合成信号')}</span>
               </div>
             </div>
           </div>
@@ -410,7 +441,7 @@ export default function AILabDemo() {
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-base font-bold">
-                  Bounding Box Regions ({boxes.length})
+                  {bi(`Bounding Box Regions (${boxes.length})`, `标注框列表 (${boxes.length})`)}
                 </h3>
                 <button
                   type="button"
@@ -418,7 +449,7 @@ export default function AILabDemo() {
                   className="inline-flex items-center gap-1 rounded-lg bg-cyan-600 px-2.5 py-1.5 font-mono text-[11px] font-bold text-white dark:bg-cyan-500 dark:text-slate-950"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  <span>Export JSON</span>
+                  <span>{bi('Export JSON', '导出 JSON')}</span>
                 </button>
               </div>
 
@@ -478,10 +509,16 @@ export default function AILabDemo() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-display text-base font-bold">
-                    Inria Aerial UHR Benchmark: Accuracy (mIoU) vs. Speed (FPS)
+                    {bi(
+                      'Inria Aerial UHR Benchmark: Accuracy (mIoU) vs. Speed (FPS)',
+                      'Inria Aerial 超高分辨率基准：分割精度 (mIoU) vs 速度 (FPS)'
+                    )}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Upper-right = stronger accuracy-speed Pareto frontier.
+                    {bi(
+                      'Upper-right = stronger accuracy-speed Pareto frontier.',
+                      '越靠右上方代表综合精度与推理吞吐帕累托优势越强。'
+                    )}
                   </p>
                 </div>
                 <Activity className="h-5 w-5 text-cyan-500" />
@@ -550,10 +587,15 @@ export default function AILabDemo() {
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-obsidian-900 lg:col-span-5">
               <div className="flex items-center gap-2 font-display text-base font-bold">
                 <Layers className="h-4 w-4 text-cyan-500" />
-                <span>Uncertainty-Guided Slim-Branch Pipeline</span>
+                <span>
+                  {bi('Uncertainty-Guided Slim-Branch Pipeline', '不确定像素引导轻量化双分支架构')}
+                </span>
               </div>
               <p className="mt-0.5 text-xs text-slate-500">
-                Click any pipeline stage to inspect how SBUPNet cuts VRAM &amp; training cost by ~35%.
+                {bi(
+                  'Click any pipeline stage to inspect how SBUPNet cuts VRAM & training cost by ~35%.',
+                  '点击下方任意阶段，了解 SBUPNet 如何降低约 35% 显存与训练成本。'
+                )}
               </p>
 
               <div className="mt-4 space-y-2">
@@ -571,12 +613,12 @@ export default function AILabDemo() {
                     <div className="flex items-center gap-2 font-mono text-xs font-bold">
                       <span className="text-cyan-600 dark:text-cyan-400">STAGE {st.step}</span>
                       <span className="font-display text-sm text-slate-950 dark:text-white">
-                        {st.title}
+                        {bi(st.title, stageZh[st.step]?.title ?? st.title)}
                       </span>
                     </div>
                     {activeStage === idx && (
                       <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        {st.detail}
+                        {bi(st.detail, stageZh[st.step]?.detail ?? st.detail)}
                       </p>
                     )}
                   </button>
@@ -589,18 +631,23 @@ export default function AILabDemo() {
           <div className="rounded-2xl border border-slate-200/90 bg-white p-5 dark:border-slate-800 dark:bg-obsidian-900">
             <div className="flex items-center gap-2 font-display text-base font-bold">
               <Cpu className="h-4 w-4 text-emerald-500" />
-              <span>Quantitative Comparison (Inria Aerial UHR Benchmark)</span>
+              <span>
+                {bi(
+                  'Quantitative Comparison (Inria Aerial UHR Benchmark)',
+                  '定量指标对比（Inria Aerial 超高分辨率遥感基准）'
+                )}
+              </span>
             </div>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead className="border-b border-slate-200 text-[10px] uppercase text-slate-400 dark:border-slate-800">
                   <tr>
-                    <th className="py-2">Model</th>
+                    <th className="py-2">{bi('Model', '模型')}</th>
                     <th className="py-2">mIoU (%)</th>
-                    <th className="py-2">Throughput (FPS)</th>
-                    <th className="py-2">Peak VRAM</th>
-                    <th className="py-2">Train Time</th>
-                    <th className="py-2">Notes</th>
+                    <th className="py-2">{bi('Throughput (FPS)', '推理速度 (FPS)')}</th>
+                    <th className="py-2">{bi('Peak VRAM', '峰值显存')}</th>
+                    <th className="py-2">{bi('Train Time', '训练时长')}</th>
+                    <th className="py-2">{bi('Notes', '特点说明')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800">

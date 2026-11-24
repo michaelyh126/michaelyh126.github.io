@@ -10,6 +10,7 @@ import { ResumeModal } from './components/ResumeModal';
 import { Footer } from './components/Footer';
 import { DemoShell } from './components/DemoShell';
 import { parseHashToDemoId, type DemoId } from './demos/registry';
+import { useLanguage } from './i18n/LanguageContext';
 
 // Lazy-load all 6 full-viewport demos so initial portfolio load stays blazing fast
 const WebGISStudioDemo = lazy(() => import('./demos/WebGISStudioDemo'));
@@ -20,11 +21,12 @@ const DevToolsDemo = lazy(() => import('./demos/DevToolsDemo'));
 const AILabDemo = lazy(() => import('./demos/AILabDemo'));
 
 function DemoLoadingFallback() {
+  const { bi } = useLanguage();
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-8 text-center">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
       <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
-        Loading interactive synthetic sandbox...
+        {bi('Loading interactive synthetic sandbox...', '正在加载交互式合成沙盒...')}
       </p>
     </div>
   );

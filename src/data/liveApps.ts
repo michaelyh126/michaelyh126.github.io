@@ -1,10 +1,16 @@
 import type { DemoId } from '../demos/registry';
+import type { Lang } from '../i18n/LanguageContext';
+
+export type LiveAppCategory =
+  | 'Geospatial & Data'
+  | 'Salon 4-Terminal SaaS'
+  | 'AI, Audio & Systems';
 
 export interface LiveAppEntry {
   id: string;
   label: string;
   shortLabel: string;
-  category: 'Geospatial & Data' | 'Salon 4-Terminal SaaS' | 'AI, Audio & Systems';
+  category: LiveAppCategory;
   href: string;
   stackTag: string;
   /** If set, routes via hash SPA sandbox instead of navigating to a standalone /apps/ bundle */
@@ -13,7 +19,6 @@ export interface LiveAppEntry {
 }
 
 export const LIVE_APPS: LiveAppEntry[] = [
-  // 1–6: Geospatial, OceanData, Hydrology, Blue Carbon & Sound-AI Original Production Frontends
   {
     id: 'webgis-workbench',
     label: 'WebGIS One-Map Workbench',
@@ -59,8 +64,6 @@ export const LIVE_APPS: LiveAppEntry[] = [
     stackTag: 'AntD · ApexCharts',
     isOriginal: true,
   },
-
-  // 7–9 (4 Terminals): Commercial Salon SaaS Original Production Frontends
   {
     id: 'salon-admin',
     label: 'Salon SaaS · Desktop Admin',
@@ -97,8 +100,6 @@ export const LIVE_APPS: LiveAppEntry[] = [
     stackTag: 'UniApp H5 · Synced',
     isOriginal: true,
   },
-
-  // Original Sound-AI Frontend + 2 Interactive CLI/Research Sandboxes
   {
     id: 'sound-ai',
     label: 'Sound-AI Bio-Acoustic Platform',
@@ -130,8 +131,91 @@ export const LIVE_APPS: LiveAppEntry[] = [
   },
 ];
 
-export const LIVE_APP_GROUPS: LiveAppEntry['category'][] = [
+export const LIVE_APP_GROUPS: LiveAppCategory[] = [
   'Geospatial & Data',
   'Salon 4-Terminal SaaS',
   'AI, Audio & Systems',
 ];
+
+const ZH_APP_OVERRIDES: Record<string, { label: string; shortLabel: string; stackTag: string }> = {
+  'webgis-workbench': {
+    label: 'WebGIS 一张图工作台',
+    shortLabel: 'WebGIS 一张图',
+    stackTag: 'React · OL 10 · Turf',
+  },
+  'blue-carbon': {
+    label: '海岸带蓝碳数据平台',
+    shortLabel: '蓝碳平台 (Vue 3)',
+    stackTag: 'Vue 3 · MapLibre GL',
+  },
+  'hydrology-dashboard': {
+    label: '多源水文监测平台 (三视图)',
+    shortLabel: '水文平台 (三端)',
+    stackTag: '公网大屏 · 站点 · 查询',
+  },
+  'open-data-portal': {
+    label: 'OceanData 开放数据门户',
+    shortLabel: '海洋开放门户',
+    stackTag: 'Three.js 地球 · OL',
+  },
+  'data-share-admin': {
+    label: 'DataHub 审批与文件后台',
+    shortLabel: 'DataHub 后台',
+    stackTag: 'AntD · ApexCharts',
+  },
+  'salon-admin': {
+    label: '美发 SaaS · PC 管理后台',
+    shortLabel: 'PC 管理端',
+    stackTag: 'React 19 · 对账 · RBAC',
+  },
+  'salon-pos': {
+    label: '美发 SaaS · 移动收银台 POS',
+    shortLabel: '移动收银',
+    stackTag: '0费率码 · 双账本',
+  },
+  'salon-customer': {
+    label: '美发 SaaS · 顾客端 H5',
+    shortLabel: '顾客端 H5',
+    stackTag: 'UniApp H5 · 实时同步',
+  },
+  'salon-barber': {
+    label: '美发 SaaS · 发型师工作台',
+    shortLabel: '发型师端',
+    stackTag: 'UniApp H5 · 提成同步',
+  },
+  'sound-ai': {
+    label: 'Sound-AI 生物声学标注平台',
+    shortLabel: 'Sound-AI 声学',
+    stackTag: 'React 19 · 声谱 Canvas',
+  },
+  'devtools-sandbox': {
+    label: 'ai-file-lock 与 qa-cli 沙盒',
+    shortLabel: '文件锁 & QA 沙盒',
+    stackTag: 'FUSE · Playwright QA',
+  },
+  'sbupnet-lab': {
+    label: 'SBUPNet (IEEE SMC ’26) 基准台',
+    shortLabel: 'SBUPNet 论文实验',
+    stackTag: '76.5% mIoU · 9.49 FPS',
+  },
+};
+
+export function getLiveApps(lang: Lang): LiveAppEntry[] {
+  if (lang === 'en') return LIVE_APPS;
+  return LIVE_APPS.map((app) => ({
+    ...app,
+    ...(ZH_APP_OVERRIDES[app.id] ?? {}),
+  }));
+}
+
+export function getLiveAppGroupLabel(group: LiveAppCategory, lang: Lang): string {
+  if (lang === 'en') return group;
+  switch (group) {
+    case 'Geospatial & Data':
+      return '空间地理与实时数据（原始前端）';
+    case 'Salon 4-Terminal SaaS':
+      return '美发四端商业 SaaS（实时联动）';
+    case 'AI, Audio & Systems':
+      return 'AI 声学标注与系统工具沙盒';
+  }
+}

@@ -1,6 +1,7 @@
 import { ArrowRight, Briefcase, Check, ShieldCheck } from 'lucide-react';
 import { PROFILE } from '../data/profile';
-import { DELIVERY_STEPS, SERVICES } from '../data/services';
+import { getDeliverySteps, getServices } from '../data/services';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const ACCENT_BORDER = {
   cyan: 'border-t-cyan-500',
@@ -9,6 +10,10 @@ const ACCENT_BORDER = {
 };
 
 export function ServicesSection() {
+  const { lang, bi } = useLanguage();
+  const services = getServices(lang);
+  const deliverySteps = getDeliverySteps(lang);
+
   return (
     <section
       id="services"
@@ -18,21 +23,22 @@ export function ServicesSection() {
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
             <Briefcase className="h-3.5 w-3.5" />
-            <span>Freelance &amp; Remote Contract Models</span>
+            <span>{bi('Freelance & Remote Contract Models', '远程合同与技术合作模式')}</span>
           </div>
           <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-            Scoped Engineering Services
+            {bi('Scoped Engineering Services', '标准化工程交付方案')}
           </h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-            Transparent milestone pricing built for overseas founders, research labs, and product
-            teams. Every engagement includes written specs, async progress updates, automated
-            Playwright video QA, and full source-code ownership.
+            {bi(
+              'Transparent milestone pricing built for overseas founders, research labs, and product teams. Every engagement includes written specs, async progress updates, automated Playwright video QA, and full source-code ownership.',
+              '面向海外与国内创业团队、科研实验室及产品负责人提供透明的里程碑交付方案：书面架构设计、异步进度同步、Playwright 自动化录屏验收及 100% 源码移交。'
+            )}
           </p>
         </div>
 
         {/* 3 Service Cards */}
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {SERVICES.map((svc) => {
+          {services.map((svc) => {
             const mailSubject = encodeURIComponent(`Scope Inquiry: ${svc.title}`);
             const mailHref = `mailto:${PROFILE.email}?subject=${mailSubject}`;
             return (
@@ -59,7 +65,7 @@ export function ServicesSection() {
                       {svc.priceRange}
                     </span>
                     <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                      USD · Fixed Milestone or Hourly
+                      {bi('USD · Fixed Milestone or Hourly', 'USD · 里程碑或工时制')}
                     </span>
                   </div>
 
@@ -69,7 +75,7 @@ export function ServicesSection() {
 
                   <div className="mt-4 rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-obsidian-950/70 dark:text-slate-300">
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                      Best for:{' '}
+                      {bi('Best for: ', '适用场景：')}
                     </span>
                     {svc.idealFor}
                   </div>
@@ -92,7 +98,7 @@ export function ServicesSection() {
                     href={mailHref}
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-900 transition hover:border-cyan-500 hover:bg-cyan-600 hover:text-white dark:border-slate-700 dark:bg-obsidian-850 dark:text-white dark:hover:border-cyan-400 dark:hover:bg-cyan-500 dark:hover:text-slate-950"
                   >
-                    <span>Request Scope &amp; Estimate</span>
+                    <span>{bi('Request Scope & Estimate', '获取方案与报价评估')}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -106,15 +112,18 @@ export function ServicesSection() {
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-4 dark:border-slate-800">
             <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-slate-100">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              <span>Remote Delivery Protocol</span>
+              <span>{bi('Remote Delivery Protocol', '远程交付保障规范')}</span>
             </div>
             <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-              Milestone-Based · Automated Video QA · Full Source Handover
+              {bi(
+                'Milestone-Based · Automated Video QA · Full Source Handover',
+                '分阶段里程碑 · 自动化录屏验收 · 完整源码移交'
+              )}
             </span>
           </div>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {DELIVERY_STEPS.map((item) => (
+            {deliverySteps.map((item) => (
               <div key={item.step}>
                 <div className="font-mono text-xs font-bold text-cyan-600 dark:text-cyan-400">
                   STEP {item.step}

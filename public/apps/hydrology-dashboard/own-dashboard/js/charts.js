@@ -1,19 +1,13 @@
 /**
- * HydroCharts —— own-dashboard 大屏 ECharts5 可视化构造器（不引 ECharts GL）。
- *
- * 集中处理复杂 option：
- *  - renderHeatmap  : ADCP profile-grid 时间×层号热力（custom series，coverage 缺测斜纹 / null 空值 / 0 值 三态区分）
- *  - renderVector   : vector-field U/V 定向箭头（custom series，speed 定色/定长）
- *  - renderWaveRose : wave-rose 方向×波高 polar 堆叠 bar
- *  - renderWqPiles  : wq-piles 多桩号时序折线
- *  - renderCalendar : phenology 文件级日历（calendar + heatmap，点击回调）
- *
- * 语义纪律：ADCP 只标层号（水深门禁默认关）；缺测层 ≠ 0 值；qc=0=质量未知（tooltip 标注）；哨兵 -1 已由后端排除。
- * 颜色一律走 cssVar()，不硬编码色值。实例按容器 id 缓存，复用 echarts.getInstanceByDom。
+ * HydroCharts — own-dashboard ECharts5 Bilingual Visualizer (EN default / ZH toggle)
  */
 (function (global) {
   'use strict';
-  if (!global.echarts) { console.error('[own-dashboard] echarts 未加载'); }
+  if (!global.echarts) { console.error('[own-dashboard] echarts not loaded'); }
+
+  function isZh() { return global.HydroI18n ? global.HydroI18n.isZh() : false; }
+  function pick(en, zh) { return isZh() ? zh : en; }
+  function loc() { return isZh() ? 'zh-CN' : 'en-US'; }
 
   const rootEl = document.documentElement;
   function cssVar(name) { return getComputedStyle(rootEl).getPropertyValue(name).trim() || name; }
@@ -26,7 +20,6 @@
   }
   function rgba(hex, a) { const [r, g, b] = hexToRgbArr(hex); return `rgba(${r},${g},${b},${a})`; }
 
-  // 顺序色阶（深蓝→亮青，明度单调递增，色觉友好）；用于热力/矢量的数值映射
   const SCALE_STOPS = ['#0a2a5e', '#1e6fff', '#4fc3f7', '#00d4c8', '#eafcff'];
   function lerp(a, b, t) { return a + (b - a) * t; }
   function scaleColor(t) {
@@ -39,7 +32,6 @@
     return `rgb(${Math.round(lerp(c1[0], c2[0], local))},${Math.round(lerp(c1[1], c2[1], local))},${Math.round(lerp(c1[2], c2[2], local))})`;
   }
 
-  // ── 实例管理 ─────────────────────────────────────────────
   const instances = new Map();
   function chart(id) {
     const el = document.getElementById(id);
@@ -49,14 +41,14 @@
     instances.set(id, inst);
     return inst;
   }
-  function resizeAll() { instances.forEach(i => { try { i.resize(); } catch (e) { /* */ } }); }
+  function resizeAll() { instances.forEach(i => { try { i.resize(); } catch (e) {} }); }
   function clear(id) { const el = document.getElementById(id); if (!el) return; const i = global.echarts.getInstanceByDom(el); if (i) i.clear(); }
 
   function fmtTime(iso) {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return String(iso);
-    return d.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) + ' ' +
-      d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return d.toLocaleDateString(loc(), { month: '2-digit', day: '2-digit' }) + ' ' +
+      d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
   const baseTooltip = () => ({
@@ -69,12 +61,6 @@
   const axisLineStyle = () => ({ lineStyle: { color: rgba(cssVar('--blue-light'), 0.2) } });
   const splitLineStyle = () => ({ lineStyle: { color: rgba(cssVar('--blue-light'), 0.08), type: 'dashed' } });
 
-  // ════════════════════════════════════════════════════════
-  //  1) ADCP profile-grid 热力图（时间×层号）
-  //  data: {layers:[int], times:[iso], matrix[t][layer], coverage[t][layer], qc[t][layer],
-  //         depth_axis, adcp_depth_annotation_enabled, metric}
-  //  Y 轴门禁：depth_axis==='layer'（默认）→ 只标层号，不标实际水深 m。
-  // ════════════════════════════════════════════════════════
   function renderHeatmap(id, data) {
     const inst = chart(id); if (!inst) return;
     const layers = data.layers || [];
@@ -83,13 +69,10 @@
     const coverage = data.coverage || [];
     const qc = data.qc || [];
 
-    // 层号门禁：只有当后端明确启用水深标注且 depth_axis 非 'layer' 时才可能标水深；
-    // 默认 depth_axis==='layer' → 一律层号 Ln。这里始终以层号呈现（后端默认关）。
     const useLayerOnly = (data.depth_axis || 'layer') === 'layer' || !data.adcp_depth_annotation_enabled;
     const yLabels = layers.map(l => useLayerOnly ? ('L' + l) : (l + ' m'));
     const xLabels = times.map(fmtTime);
 
-    // 收集数值范围 + 组装 custom 数据项 [ti, li, value, cov(1/0), qc]
     const items = [];
     let vmin = Infinity, vmax = -Infinity, hasVal = false;
     for (let ti = 0; ti < times.length; ti++) {
@@ -116,16 +99,19 @@
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], val = v[2], cov = v[3], q = v[4];
-          let state = (val !== null && val !== undefined) ? `<b>${Number(val).toFixed(3)}</b>`
-            : (cov ? '有采样行 · 无有效值(null)' : '缺测 / 未同步');
-          const qcTxt = (q === 0) ? 'qc=0 质量未知' : (q === null || q === undefined ? 'qc 无' : 'qc=' + q);
-          return `${xLabels[ti] || ''}<br/>层号 <b>${yLabels[li] || ''}</b><br/>${state}<br/><span style="color:${cssVar('--muted')}">${qcTxt}</span>`;
+          let state = (val !== null && val !== undefined)
+            ? `<b>${Number(val).toFixed(3)}</b>`
+            : (cov ? pick('Sampled · Null', '有采样行 · 无有效值(null)') : pick('Missing / Unsynced', '缺测 / 未同步'));
+          const qcTxt = (q === 0)
+            ? pick('qc=0 unknown', 'qc=0 质量未知')
+            : (q === null || q === undefined ? pick('qc N/A', 'qc 无') : 'qc=' + q);
+          return `${xLabels[ti] || ''}<br/>${pick('Layer', '层号')} <b>${yLabels[li] || ''}</b><br/>${state}<br/><span style="color:${cssVar('--muted')}">${qcTxt}</span>`;
         },
       }),
       visualMap: {
         type: 'continuous', min: vmin, max: vmax, dimension: 2, seriesIndex: 0,
         calculable: true, orient: 'horizontal', left: 'center', bottom: -2, itemWidth: 10, itemHeight: 70,
-        text: ['高', '低'], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
         inRange: { color: SCALE_STOPS },
         show: hasVal,
       },
@@ -135,7 +121,7 @@
         axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }),
       },
       yAxis: {
-        type: 'category', data: yLabels, name: useLayerOnly ? '层号' : '深度',
+        type: 'category', data: yLabels, name: useLayerOnly ? pick('Layer', '层号') : pick('Depth', '深度'),
         nameTextStyle: { color: cssVar('--muted'), fontSize: 9 },
         axisLine: axisLineStyle(), axisTick: { show: false },
         axisLabel: axisLabelStyle(),
@@ -149,14 +135,12 @@
           const w = size[0], h = size[1], pad = 0.5;
           const shape = { x: center[0] - w / 2 + pad, y: center[1] - h / 2 + pad, width: Math.max(w - 2 * pad, 1), height: Math.max(h - 2 * pad, 1) };
           if (cov === 0) {
-            // 缺测 / 未同步：留白 + 斜纹（区别于 0 值）
             return { type: 'group', children: [
               { type: 'rect', shape, style: { fill: MISS_FILL, stroke: MISS_STROKE, lineWidth: 0.5, lineDash: [2, 2] } },
               { type: 'line', shape: { x1: shape.x, y1: shape.y + shape.height, x2: shape.x + shape.width, y2: shape.y }, style: { stroke: MISS_STROKE, lineWidth: 0.8 } },
             ] };
           }
           if (val === null || val === undefined || Number.isNaN(val)) {
-            // 有观测行但值为空：空心描边（区别于缺测与 0 值）
             return { type: 'rect', shape, style: { fill: 'transparent', stroke: NULL_STROKE, lineWidth: 0.75 } };
           }
           return { type: 'rect', shape, style: { fill: api.visual('color') } };
@@ -166,10 +150,6 @@
     }, true);
   }
 
-  // ════════════════════════════════════════════════════════
-  //  2) vector-field 矢量场（U/V 定向箭头，speed 定色）
-  //  data: {points:[{time,depth_layer,u,v,speed,dir_deg}], dir_convention, speed_unit}
-  // ════════════════════════════════════════════════════════
   function renderVector(id, data) {
     const inst = chart(id); if (!inst) return;
     const pts = data.points || [];
@@ -197,19 +177,19 @@
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], u = v[2], w = v[3], s = v[4], dir = v[5];
-          return `${xLabels[ti] || ''}<br/>层号 <b>${yLabels[li] || ''}</b><br/>U(east)=${Number(u).toFixed(3)} · V(north)=${Number(w).toFixed(3)}<br/>速率 <b>${Number(s).toFixed(3)}</b> ${data.speed_unit || ''}<br/>流向 ${dir == null ? '--' : Number(dir).toFixed(1) + '°'}`;
+          return `${xLabels[ti] || ''}<br/>${pick('Layer', '层号')} <b>${yLabels[li] || ''}</b><br/>U(east)=${Number(u).toFixed(3)} · V(north)=${Number(w).toFixed(3)}<br/>${pick('Speed', '速率')} <b>${Number(s).toFixed(3)}</b> ${data.speed_unit || ''}<br/>${pick('Heading', '流向')} ${dir == null ? '--' : Number(dir).toFixed(1) + '°'}`;
         },
       }),
       visualMap: {
         type: 'continuous', min: smin, max: smax, dimension: 4, seriesIndex: 0,
         calculable: true, orient: 'horizontal', left: 'center', bottom: -2, itemWidth: 10, itemHeight: 70,
-        text: ['快', '慢'], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        text: [pick('Fast', '快'), pick('Slow', '慢')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
         inRange: { color: SCALE_STOPS },
       },
       xAxis: { type: 'category', data: xLabels, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }) },
-      yAxis: { type: 'category', data: yLabels, name: '层号', nameTextStyle: { color: cssVar('--muted'), fontSize: 9 }, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: axisLabelStyle() },
+      yAxis: { type: 'category', data: yLabels, name: pick('Layer', '层号'), nameTextStyle: { color: cssVar('--muted'), fontSize: 9 }, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: axisLabelStyle() },
       series: [{
-        type: 'custom', name: '矢量',
+        type: 'custom', name: pick('Vector', '矢量'),
         renderItem: (params, api) => {
           const u = api.value(2), w = api.value(3), s = api.value(4);
           const center = api.coord([api.value(0), api.value(1)]);
@@ -220,14 +200,12 @@
           if (mag < 1e-9) {
             return { type: 'circle', shape: { cx: center[0], cy: center[1], r: 2 }, style: { fill: color } };
           }
-          // 定向：北(V)向上 → 屏幕 y 取负；定色：由 speed（visualMap）。长度按 speed 归一微调 + 基长。
           const dx = u / mag, dy = w / mag;
           const norm = (s - smin) / (smax - smin || 1);
           const len = cell * (0.28 + 0.16 * norm);
           const ex = center[0] + dx * len, ey = center[1] - dy * len;
-          const ah = len * 0.34; // arrowhead
-          // 箭头两翼：相对主方向 ±150°
-          const ang = Math.atan2(-dy, dx); // 屏幕坐标角度
+          const ah = len * 0.34;
+          const ang = Math.atan2(-dy, dx);
           const a1 = ang + Math.PI * 5 / 6, a2 = ang - Math.PI * 5 / 6;
           return { type: 'group', children: [
             { type: 'line', shape: { x1: center[0], y1: center[1], x2: ex, y2: ey }, style: { stroke: color, lineWidth: 1.4 } },
@@ -240,10 +218,6 @@
     }, true);
   }
 
-  // ════════════════════════════════════════════════════════
-  //  3) wave-rose 波浪玫瑰（方向×波高 polar 堆叠 bar）
-  //  data: {dir_bins:[{center_deg,start_deg,end_deg}], height_bins:[{min,max}], freq_matrix[dir][h]}
-  // ════════════════════════════════════════════════════════
   function renderWaveRose(id, data) {
     const inst = chart(id); if (!inst) return;
     const dirBins = data.dir_bins || [];
@@ -264,7 +238,7 @@
 
     inst.setOption({
       backgroundColor: 'transparent',
-      tooltip: Object.assign(baseTooltip(), { trigger: 'item', formatter: (p) => `${p.name} · ${p.seriesName}<br/>频次 <b>${p.value}</b>` }),
+      tooltip: Object.assign(baseTooltip(), { trigger: 'item', formatter: (p) => `${p.name} · ${p.seriesName}<br/>${pick('Count', '频次')} <b>${p.value}</b>` }),
       legend: { bottom: 0, textStyle: { color: cssVar('--muted'), fontSize: 9 }, itemWidth: 10, itemHeight: 8, type: 'scroll' },
       polar: { center: ['50%', '46%'], radius: '66%' },
       angleAxis: {
@@ -282,10 +256,6 @@
     }, true);
   }
 
-  // ════════════════════════════════════════════════════════
-  //  4) wq-piles 水质多桩号时序（多系列折线）
-  //  data: {piles:[{pile_no, points:[[iso,value]]}], metric}
-  // ════════════════════════════════════════════════════════
   function renderWqPiles(id, data) {
     const inst = chart(id); if (!inst) return;
     const piles = data.piles || [];
@@ -293,7 +263,7 @@
     const series = piles.map((pile, i) => {
       const color = PALETTE[i % PALETTE.length];
       return {
-        name: '桩号 ' + pile.pile_no, type: 'line', showSymbol: false, smooth: 0.25, connectNulls: false,
+        name: pick('Pile ', '桩号 ') + pile.pile_no, type: 'line', showSymbol: false, smooth: 0.25, connectNulls: false,
         data: (pile.points || []).map(pt => [pt[0], pt[1]]),
         lineStyle: { width: 1.6, color }, itemStyle: { color },
       };
@@ -309,10 +279,6 @@
     }, true);
   }
 
-  // ════════════════════════════════════════════════════════
-  //  5) phenology 日历（calendar + heatmap；点击某日回调 onPick(date)）
-  //  calendar: [{date:'YYYY-MM-DD', count}]
-  // ════════════════════════════════════════════════════════
   function renderCalendar(id, calendar, onPick) {
     const inst = chart(id); if (!inst) return;
     calendar = calendar || [];
@@ -323,10 +289,12 @@
 
     inst.setOption({
       backgroundColor: 'transparent',
-      tooltip: Object.assign(baseTooltip(), { formatter: (p) => `${p.value[0]}<br/>图片 <b>${p.value[1]}</b> 张` }),
+      tooltip: Object.assign(baseTooltip(), {
+        formatter: (p) => `${p.value[0]}<br/>${pick('Frames', '图片')}: <b>${p.value[1]}</b>`,
+      }),
       visualMap: {
         min: cmin, max: cmax, calculable: false, orient: 'horizontal', left: 'center', bottom: 0,
-        itemWidth: 10, itemHeight: 60, text: ['多', '少'], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        itemWidth: 10, itemHeight: 60, text: [pick('More', '多'), pick('Less', '少')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
         inRange: { color: [rgba(cssVar('--blue'), 0.25), cssVar('--teal'), cssVar('--orange')] },
       },
       calendar: {
@@ -335,8 +303,8 @@
         itemStyle: { color: rgba(cssVar('--blue'), 0.05), borderColor: rgba(cssVar('--blue-light'), 0.12), borderWidth: 1 },
         splitLine: { lineStyle: { color: rgba(cssVar('--blue-light'), 0.2) } },
         yearLabel: { show: true, color: cssVar('--muted'), fontSize: 9 },
-        monthLabel: { color: cssVar('--muted'), fontSize: 9, nameMap: 'cn' },
-        dayLabel: { color: cssVar('--muted'), fontSize: 8, nameMap: 'cn', firstDay: 1 },
+        monthLabel: { color: cssVar('--muted'), fontSize: 9, nameMap: isZh() ? 'cn' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+        dayLabel: { color: cssVar('--muted'), fontSize: 8, nameMap: isZh() ? 'cn' : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], firstDay: 1 },
       },
       series: [{
         type: 'heatmap', coordinateSystem: 'calendar',

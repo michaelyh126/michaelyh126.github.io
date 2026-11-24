@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { TelemetryPoint } from '../data/stations';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export type TelemetryMetric = 'waterLevelM' | 'salinityPsu' | 'tempC';
 
@@ -11,27 +12,42 @@ interface TelemetryChartProps {
 
 const METRIC_META: Record<
   TelemetryMetric,
-  { label: string; shortLabel: string; unit: string; stroke: string; fillStart: string; badgeClass: string }
+  {
+    labelEn: string;
+    labelZh: string;
+    shortEn: string;
+    shortZh: string;
+    unit: string;
+    stroke: string;
+    fillStart: string;
+    badgeClass: string;
+  }
 > = {
   waterLevelM: {
-    label: 'Water Level (MLLW)',
-    shortLabel: 'Water Level',
+    labelEn: 'Water Level (MLLW)',
+    labelZh: '潮位水位 (MLLW)',
+    shortEn: 'Water Level',
+    shortZh: '潮位',
     unit: 'm',
     stroke: '#38BDF8',
     fillStart: 'rgba(56, 189, 248, 0.28)',
     badgeClass: 'text-sky-600 dark:text-sky-300',
   },
   salinityPsu: {
-    label: 'Salinity',
-    shortLabel: 'Salinity',
+    labelEn: 'Salinity',
+    labelZh: '盐度',
+    shortEn: 'Salinity',
+    shortZh: '盐度',
     unit: 'PSU',
     stroke: '#10B981',
     fillStart: 'rgba(16, 185, 129, 0.26)',
     badgeClass: 'text-emerald-600 dark:text-emerald-300',
   },
   tempC: {
-    label: 'Water Temp',
-    shortLabel: 'Temp',
+    labelEn: 'Water Temp',
+    labelZh: '水温',
+    shortEn: 'Temp',
+    shortZh: '水温',
     unit: '°C',
     stroke: '#F59E0B',
     fillStart: 'rgba(245, 158, 11, 0.24)',
@@ -40,6 +56,7 @@ const METRIC_META: Record<
 };
 
 export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChartProps) {
+  const { bi } = useLanguage();
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const meta = METRIC_META[metric];
 
@@ -104,7 +121,7 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                 }`}
               >
-                {METRIC_META[key].shortLabel}
+                {bi(METRIC_META[key].shortEn, METRIC_META[key].shortZh)}
               </button>
             );
           })}
@@ -129,7 +146,7 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
           viewBox={`0 0 ${width} ${height}`}
           className="h-40 w-full select-none overflow-visible"
           role="img"
-          aria-label={`24-hour ${meta.label} telemetry chart`}
+          aria-label={`24-hour ${bi(meta.labelEn, meta.labelZh)} telemetry chart`}
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -138,7 +155,6 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
             </linearGradient>
           </defs>
 
-          {/* Horizontal Gridlines & Y-Axis Labels */}
           {yTicks.map((tick, idx) => (
             <g key={idx}>
               <line
@@ -162,7 +178,6 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
             </g>
           ))}
 
-          {/* X-Axis Time Markers */}
           {[0, 6, 12, 18, 23].map((idx) => {
             const pt = coords[idx];
             if (!pt) return null;
@@ -179,10 +194,8 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
             );
           })}
 
-          {/* Area Fill */}
           <path d={areaPath} fill={`url(#${gradientId})`} />
 
-          {/* Line Stroke */}
           <polyline
             fill="none"
             stroke={meta.stroke}
@@ -192,7 +205,6 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
             points={polylinePoints}
           />
 
-          {/* Active Crosshair */}
           {activePoint && (
             <g>
               <line
@@ -217,7 +229,6 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
             </g>
           )}
 
-          {/* Invisible Hover Columns */}
           {coords.map((c, idx) => {
             const colW = innerW / Math.max(coords.length - 1, 1);
             return (
@@ -240,10 +251,10 @@ export function TelemetryChart({ series, metric, onMetricChange }: TelemetryChar
       {/* 24h KPI Strip */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: 'Latest', val: values[values.length - 1] },
-          { label: '24h Min', val: rawMin },
-          { label: '24h Max', val: rawMax },
-          { label: '24h Avg', val: meanVal },
+          { label: bi('Latest', '最新'), val: values[values.length - 1] },
+          { label: bi('24h Min', '24h 最低'), val: rawMin },
+          { label: bi('24h Max', '24h 最高'), val: rawMax },
+          { label: bi('24h Avg', '24h 均值'), val: meanVal },
         ].map((item) => (
           <div
             key={item.label}
