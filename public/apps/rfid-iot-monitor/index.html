@@ -1,10 +1,84 @@
-<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><title>SmartRFID · IoT Asset &amp; Archive Monitor</title><link rel=icon type=image/svg+xml href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231890ff'/%3E%3Cpath d='M22 44c0-12.15 9.85-22 22-22M22 44c0-7.73 6.27-14 14-14M22 44c0-3.31 2.69-6 6-6' stroke='%23fff' stroke-width='4.5' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='22' cy='44' r='3.5' fill='%23fff'/%3E%3C/svg%3E"><style>html, body, #app {
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><title>RFID Asset Monitoring System</title><link rel=icon href=logo.png><style>html,
+    body,
+    #app {
       height: 100%;
-      margin: 0;
-      padding: 0;
-      background: #f0f2f5;
+      margin: 0px;
+      padding: 0px;
     }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #f6f6f6; border-radius: 2px; }
-    ::-webkit-scrollbar-thumb { background: #cdcdcd; border-radius: 2px; }
-    ::-webkit-scrollbar-thumb:hover { background: #8c8c8c; }</style><link href=css/chunk-0d72aeae.bb492a98.css rel=prefetch><link href=css/chunk-2f82fb32.9425f805.css rel=prefetch><link href=css/chunk-4a0c8143.6ffea52f.css rel=prefetch><link href=css/chunk-61c66c61.74c52293.css rel=prefetch><link href=css/chunk-77722bfe.ceea2366.css rel=prefetch><link href=css/chunk-7df06276.45cbd77d.css rel=prefetch><link href=css/chunk-9732cfa0.0dc78c3a.css rel=prefetch><link href=js/chunk-0d72aeae.6fb4bd1e.js rel=prefetch><link href=js/chunk-2f82fb32.80ff598c.js rel=prefetch><link href=js/chunk-4a0c8143.abad042e.js rel=prefetch><link href=js/chunk-61c66c61.39424ca9.js rel=prefetch><link href=js/chunk-77722bfe.4fac4172.js rel=prefetch><link href=js/chunk-7df06276.1fc2399d.js rel=prefetch><link href=js/chunk-9732cfa0.b98cb417.js rel=prefetch><link href=css/app.8e2f00c8.css rel=preload as=style><link href=css/chunk-vendors.cfa6d6d1.css rel=preload as=style><link href=js/app.0c28913e.js rel=preload as=script><link href=js/chunk-vendors.add2a872.js rel=preload as=script><link href=css/chunk-vendors.cfa6d6d1.css rel=stylesheet><link href=css/app.8e2f00c8.css rel=stylesheet></head><body><div id=app></div><script src=js/chunk-vendors.add2a872.js></script><script src=js/app.0c28913e.js></script></body></html>
+    #loader-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999999;
+    }
+    #loader {
+      display: block;
+      position: relative;
+      left: 50%;
+      top: 50%;
+      width: 120px;
+      height: 120px;
+      margin: -75px 0 0 -75px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #FFF;
+      animation: spin 2s linear infinite;
+      z-index: 1001;
+    }
+    #loader:before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      right: 5px;
+      bottom: 5px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #FFF;
+      animation: spin 3s linear infinite;
+    }
+    #loader:after {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #FFF;
+      animation: spin 1.5s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #loader-wrapper .loader-section {
+      position: fixed;
+      top: 0;
+      width: 51%;
+      height: 100%;
+      background: #49a9ee;
+      z-index: 1000;
+    }
+    #loader-wrapper .loader-section.section-left { left: 0; }
+    #loader-wrapper .loader-section.section-right { right: 0; }
+    #loader-wrapper .load_title {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #FFF;
+      font-size: 14px;
+      width: 100%;
+      text-align: center;
+      z-index: 9999999999999;
+      position: absolute;
+      top: 60%;
+      opacity: 1;
+      line-height: 30px;
+    }
+    ::-webkit-scrollbar{ width:8px; height:8px; }
+    ::-webkit-scrollbar-track{ background: #f6f6f6; border-radius:2px; }
+    ::-webkit-scrollbar-thumb{ background: #cdcdcd; border-radius:2px; }
+    ::-webkit-scrollbar-thumb:hover{ background: #747474; }
+    ::-webkit-scrollbar-corner { background: #f6f6f6; }</style><script src=static/config.js></script><link href=css/chunk-0bc12352.b2a626b7.css rel=prefetch><link href=css/chunk-1b3e1fbe.cef34cc1.css rel=prefetch><link href=css/chunk-1dc6ff0f.b2a626b7.css rel=prefetch><link href=css/chunk-1e8df510.8534b635.css rel=prefetch><link href=css/chunk-26a8ef8e.b2a626b7.css rel=prefetch><link href=css/chunk-4d87dc0a.b2a626b7.css rel=prefetch><link href=css/chunk-4e69ce08.b2a626b7.css rel=prefetch><link href=css/chunk-66f17d70.b2a626b7.css rel=prefetch><link href=css/chunk-69ac322e.b2a626b7.css rel=prefetch><link href=css/chunk-d725ea12.b2a626b7.css rel=prefetch><link href=css/chunk-ddc28292.b2a626b7.css rel=prefetch><link href=css/chunk-fffb63c2.2063eb1e.css rel=prefetch><link href=js/chunk-0bc12352.ece07826.js rel=prefetch><link href=js/chunk-1b3e1fbe.dd59442d.js rel=prefetch><link href=js/chunk-1dc6ff0f.7bab6128.js rel=prefetch><link href=js/chunk-1e8df510.cecd3804.js rel=prefetch><link href=js/chunk-1f00bcfa.798b204e.js rel=prefetch><link href=js/chunk-26a8ef8e.34044fdf.js rel=prefetch><link href=js/chunk-2d0c7326.1e87de58.js rel=prefetch><link href=js/chunk-4d87dc0a.be79219b.js rel=prefetch><link href=js/chunk-4e69ce08.25082479.js rel=prefetch><link href=js/chunk-66f17d70.2c7058de.js rel=prefetch><link href=js/chunk-69ac322e.909f539d.js rel=prefetch><link href=js/chunk-d725ea12.b2586559.js rel=prefetch><link href=js/chunk-ddc28292.88372227.js rel=prefetch><link href=js/chunk-fffb63c2.3de7b3ad.js rel=prefetch><link href=css/app.e5794d8c.css rel=preload as=style><link href=css/chunk-vendors.b94a0cff.css rel=preload as=style><link href=js/app.00df4393.js rel=preload as=script><link href=js/chunk-vendors.6010b015.js rel=preload as=script><link href=css/chunk-vendors.b94a0cff.css rel=stylesheet><link href=css/app.e5794d8c.css rel=stylesheet></head><body><div id=app><div id=loader-wrapper><div id=loader></div><div class="loader-section section-left"></div><div class="loader-section section-right"></div><div class=load_title>Loading RFID Asset Monitoring System...</div></div></div><script src=js/chunk-vendors.6010b015.js></script><script src=js/app.00df4393.js></script></body></html>

@@ -1,1 +1,0 @@
-import{a3 as e}from"./vendor-misc-CIof4Gvn.js";import{m as r,e as s}from"./index-DMVUawl9.js";s();const t=e.create({baseURL:"/mock-api/",timeout:8e3,adapter:r});t.interceptors.request.use(e=>{s();const r=localStorage.getItem("token");return r&&(e.headers=e.headers||{},e.headers.token=r),e},e=>Promise.reject(e)),t.interceptors.response.use(e=>e);export{t as a};
