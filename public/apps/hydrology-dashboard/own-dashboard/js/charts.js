@@ -95,7 +95,7 @@
 
     inst.setOption({
       backgroundColor: 'transparent',
-      grid: { top: 14, right: 18, bottom: 30, left: 42 },
+      grid: { top: 14, right: 18, bottom: 62, left: 44 },
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], val = v[2], cov = v[3], q = v[4];
@@ -110,15 +110,15 @@
       }),
       visualMap: {
         type: 'continuous', min: vmin, max: vmax, dimension: 2, seriesIndex: 0,
-        calculable: true, orient: 'horizontal', left: 'center', bottom: -2, itemWidth: 10, itemHeight: 70,
-        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        calculable: true, orient: 'horizontal', left: 'center', bottom: 2, itemWidth: 10, itemHeight: 76,
+        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 10 },
         inRange: { color: SCALE_STOPS },
         show: hasVal,
       },
       xAxis: {
         type: 'category', data: xLabels,
         axisLine: axisLineStyle(), axisTick: { show: false },
-        axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }),
+        axisLabel: { color: cssVar('--muted'), fontSize: 10, interval: 'auto', hideOverlap: true, margin: 8 },
       },
       yAxis: {
         type: 'category', data: yLabels, name: useLayerOnly ? pick('Layer', '层号') : pick('Depth', '深度'),
@@ -173,7 +173,7 @@
 
     inst.setOption({
       backgroundColor: 'transparent',
-      grid: { top: 14, right: 18, bottom: 30, left: 42 },
+      grid: { top: 14, right: 18, bottom: 62, left: 44 },
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], u = v[2], w = v[3], s = v[4], dir = v[5];
@@ -182,11 +182,11 @@
       }),
       visualMap: {
         type: 'continuous', min: smin, max: smax, dimension: 4, seriesIndex: 0,
-        calculable: true, orient: 'horizontal', left: 'center', bottom: -2, itemWidth: 10, itemHeight: 70,
-        text: [pick('Fast', '快'), pick('Slow', '慢')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        calculable: true, orient: 'horizontal', left: 'center', bottom: 2, itemWidth: 10, itemHeight: 76,
+        text: [pick('Fast', '快'), pick('Slow', '慢')], textStyle: { color: cssVar('--muted'), fontSize: 10 },
         inRange: { color: SCALE_STOPS },
       },
-      xAxis: { type: 'category', data: xLabels, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }) },
+      xAxis: { type: 'category', data: xLabels, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: { color: cssVar('--muted'), fontSize: 10, interval: 'auto', hideOverlap: true, margin: 8 } },
       yAxis: { type: 'category', data: yLabels, name: pick('Layer', '层号'), nameTextStyle: { color: cssVar('--muted'), fontSize: 9 }, axisLine: axisLineStyle(), axisTick: { show: false }, axisLabel: axisLabelStyle() },
       series: [{
         type: 'custom', name: pick('Vector', '矢量'),

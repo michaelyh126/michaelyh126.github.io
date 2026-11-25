@@ -20,6 +20,7 @@
       "showSun": false,
       "showMoon": false,
       "showSkyBox": false,
+      "showLogo": false,
       "showSkyAtmosphere": true,
       "fog": true,
       "fxaa": true,
@@ -67,10 +68,13 @@
       "mouseDownView": true,
       "zoom": { "insertIndex": 1 },
       "compass": { "bottom": "toolbar", "left": "5px" },
-      "distanceLegend": { "left": "10px", "bottom": "2px" },
+      "distanceLegend": {
+        "style": { "left": "60px", "bottom": "42px" }
+      },
       "locationBar": {
         "crs": "WGS84",
         "crsDecimal": 4,
+        "style": { "left": "155px", "right": "0px", "bottom": "0px" },
         "template": "<div>Lng: {lng}°</div> <div>Lat: {lat}°</div> <div>Elev: {alt} m</div> <div class='hide700'>Zoom: {level}</div><div>Heading: {heading}°</div> <div>Pitch: {pitch}°</div><div class='hide700'>Cam Alt: {cameraHeight} m</div>"
       }
     },

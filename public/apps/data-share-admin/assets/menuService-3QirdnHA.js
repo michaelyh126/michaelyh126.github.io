@@ -1,0 +1,1 @@
+import{Y as e}from"./index-CIntuVFY.js";const t={getMenuList:t=>e.post({url:"/menu/getMenuList",data:t}),saveMenu:t=>e.post({url:"/menu/saveMenu",data:t}),deleteMenu:t=>e.post({url:"/menu/deleteMenu",data:t})};export{t as m};

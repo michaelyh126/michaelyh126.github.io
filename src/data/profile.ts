@@ -46,7 +46,7 @@ export const PROFILE: ProfileConfig = {
   name: 'Hao Yang',
   handle: 'michaelyh126',
   role: 'Geospatial, 3D WebGIS & Full-Stack Systems Engineer',
-  shortRole: '2D/3D WebGIS · Telemetry · Full-Stack SaaS',
+  shortRole: '2D/3D WebGIS · Full-Stack',
   headline: 'Engineering precision 2D/3D WebGIS studios, real-time data platforms & production SaaS.',
   subheadline:
     'M.S. CS candidate & IEEE SMC 2026 first author. Combining 4 years of hand-crafted 3D CesiumJS, Canvas, WebSocket & PyTorch fundamentals (2021–2025) with AI-accelerated full-stack shipping & automated Playwright QA (2026) — 12 live deployed apps ready to test.',
@@ -125,7 +125,7 @@ export function getProfile(lang: Lang): ProfileConfig {
     ...PROFILE,
     name: '杨昊 · Hao Yang',
     role: '二三维 WebGIS 与全栈系统工程师',
-    shortRole: '2D/3D WebGIS · 时序数据 · 全栈 SaaS',
+    shortRole: '2D/3D WebGIS · 全栈工程',
     headline: '专注高精度二三维 WebGIS 工作台、实时数据平台与可验证的全栈 SaaS 工程。',
     subheadline:
       '计算机科学与技术硕士在读，IEEE SMC 2026 第一作者。兼具 2021–2025 前 AI 时代纯手搓三维 CesiumJS、流体风场、WebSocket 与 PyTorch 扎实功底，以及 2026 AI 协同高效工程交付与 Playwright 自动化验收能力 —— 12 套真实前端已在线部署，开箱可测。',

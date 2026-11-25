@@ -283,6 +283,8 @@ function runQueryApp() {
   };
 
   // ── helpers ──
+  const isEn = () => !window.HydroI18n || HydroI18n.isEn();
+  const tr = (en, zh) => (isEn() ? en : zh);
   function el(id) { return document.getElementById(id); }
   function setText(id, t) { const e = el(id); if (e) e.textContent = t; }
   function fmtInt(n) { return (n === null || n === undefined || Number.isNaN(n)) ? '--' : Number(n).toLocaleString('zh-CN'); }
@@ -333,6 +335,7 @@ function runQueryApp() {
         edit: { featureGroup: state.drawnItems, edit: false, remove: true },
       });
       state.map.addControl(drawControl);
+      decorateDrawButtons();
       state.map.on(L.Draw.Event.CREATED, (e) => {
         state.drawnItems.clearLayers();
         state.drawnItems.addLayer(e.layer);
@@ -344,6 +347,30 @@ function runQueryApp() {
       toast('leaflet-draw 未加载，画框功能不可用', 'warning');
     }
     setTimeout(() => { try { state.map.invalidateSize(); } catch (e) {} }, 300);
+  }
+
+  function decorateDrawButtons() {
+    const icons = {
+      '.leaflet-draw-draw-polygon': {
+        title: tr('Draw Polygon', '绘制多边形'),
+        svg: '<svg viewBox="0 0 20 20" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="10,2.5 17,7.5 14.5,16.5 5.5,16.5 3,7.5"/><circle cx="10" cy="2.5" r="1.4" fill="currentColor"/><circle cx="17" cy="7.5" r="1.4" fill="currentColor"/><circle cx="14.5" cy="16.5" r="1.4" fill="currentColor"/><circle cx="5.5" cy="16.5" r="1.4" fill="currentColor"/><circle cx="3" cy="7.5" r="1.4" fill="currentColor"/></svg>',
+      },
+      '.leaflet-draw-draw-rectangle': {
+        title: tr('Draw Box', '绘制矩形框'),
+        svg: '<svg viewBox="0 0 20 20" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="13" height="11" rx="1.5" stroke-dasharray="3 2"/><circle cx="3.5" cy="4.5" r="1.4" fill="currentColor"/><circle cx="16.5" cy="15.5" r="1.4" fill="currentColor"/></svg>',
+      },
+      '.leaflet-draw-edit-remove': {
+        title: tr('Clear', '清除绘制图形'),
+        svg: '<svg viewBox="0 0 20 20" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h13"/><path d="M7.5 5.5V3.8c0-.5.4-.8.9-.8h3.2c.5 0 .9.3.9.8v1.7"/><path d="M5.5 5.5l.8 10.5c.1.8.7 1.3 1.5 1.3h4.4c.8 0 1.4-.5 1.5-1.3l.8-10.5"/><line x1="8.5" y1="9" x2="8.5" y2="14"/><line x1="11.5" y1="9" x2="11.5" y2="14"/></svg>',
+      },
+    };
+    Object.keys(icons).forEach((sel) => {
+      const btn = document.querySelector('#map ' + sel);
+      if (!btn) return;
+      btn.innerHTML = icons[sel].svg;
+      btn.setAttribute('title', icons[sel].title);
+      btn.setAttribute('aria-label', icons[sel].title);
+    });
   }
 
   function deriveShape(layer, type) {
@@ -416,10 +443,21 @@ function runQueryApp() {
     const count = (data && data.count != null) ? data.count : items.length;
     const authNote = data && data.auth_note;
     const degraded = (data && data.degraded) || [];
+    const modeNamesEn = { current: 'Current', at_time: 'At Timestamp', trajectory: 'Trajectory' };
     if (!items.length) {
-      setStatusFloat('模式 <b>' + esc(mode) + '</b> · 无匹配站点或未授权（deny by default，不泄露存在性）。', authNote, degraded);
+      setStatusFloat(
+        isEn()
+          ? 'Mode: <b>' + esc(modeNamesEn[mode] || mode) + '</b> · 0 stations matched (deny by default).'
+          : '模式 <b>' + esc(mode) + '</b> · 无匹配站点或未授权（deny by default，不泄露存在性）。',
+        authNote, degraded
+      );
     } else {
-      setStatusFloat('模式 <b>' + esc(mode) + '</b> · 命中 <b>' + count + '</b> 站点。', authNote, degraded);
+      setStatusFloat(
+        isEn()
+          ? 'Mode: <b>' + esc(modeNamesEn[mode] || mode) + '</b> · <b>' + count + '</b> ' + (count === 1 ? 'station' : 'stations') + ' matched'
+          : '模式 <b>' + esc(mode) + '</b> · 命中 <b>' + count + '</b> 站点。',
+        authNote, degraded
+      );
     }
   }
 
@@ -441,11 +479,11 @@ function runQueryApp() {
 
   function setStatusFloat(html, authNote, degraded) {
     let s = html;
-    if (authNote) s += '<br/><b>auth_note</b>：' + esc(authNote);
-    if (degraded && degraded.length) s += '<br/><span class="deg">降级：' + esc(degraded.join(', ')) + '（部分数据源不可用，结果可能不完整）</span>';
+    if (authNote) s += '<br/><b>auth_note</b>' + (isEn() ? ': ' : '：') + esc(authNote);
+    if (degraded && degraded.length) s += '<br/><span class="deg">' + (isEn() ? 'Degraded: ' : '降级：') + esc(degraded.join(', ')) + (isEn() ? ' (partial source unavailable)' : '（部分数据源不可用，结果可能不完整）') + '</span>';
     el('map-status').innerHTML = s;
     const dg = el('sp-degraded');
-    if (degraded && degraded.length) { dg.classList.remove('hidden'); dg.textContent = '空间数据源降级：' + degraded.join(', ') + '（reader_unavailable，结果不完整但不崩）'; }
+    if (degraded && degraded.length) { dg.classList.remove('hidden'); dg.textContent = (isEn() ? 'Spatial source degraded: ' : '空间数据源降级：') + degraded.join(', '); }
     else dg.classList.add('hidden');
   }
 
@@ -499,13 +537,21 @@ function runQueryApp() {
     state.selected = s;
     renderStationList();
     const label = s.station_id + ' · ' + (s.name || '') + ' [' + (s.system || sysOf(s.namespace)) + ']';
-    el('series-meta').innerHTML = '目标站点：<b>' + esc(label) + '</b>';
-    el('exp-target').innerHTML = '目标：<b>' + esc(s.station_id) + '</b>';
+    el('series-meta').innerHTML = (isEn() ? 'Target Station: <b>' : '目标站点：<b>') + esc(label) + '</b>';
+    el('exp-target').innerHTML = (isEn() ? 'Target: <b>' : '目标：<b>') + esc(s.station_id) + '</b>';
     // 剖面仅 field
     const isField = s.namespace === 'field';
     el('profile-run').disabled = !isField;
-    if (isField) { el('profile-meta').innerHTML = '目标站点：<b>' + esc(s.station_id) + '</b>'; panelState('state-profile', 'empty', '点击「查询」加载剖面'); }
-    else { el('profile-meta').innerHTML = '剖面仅 <b>field</b> 命名空间可用（当前 ' + esc(s.namespace) + '）'; panelState('state-profile', 'empty', '剖面仅 field 命名空间可用'); HydroQCharts.clear('chart-profile'); }
+    if (isField) {
+      el('profile-meta').innerHTML = (isEn() ? 'Target Station: <b>' : '目标站点：<b>') + esc(s.station_id) + '</b>';
+      panelState('state-profile', 'empty', tr('Click Run Query to load depth profile', '点击「查询」加载剖面'));
+    } else {
+      el('profile-meta').innerHTML = isEn()
+        ? 'Depth profile available for <b>field</b> namespace only (current: ' + esc(s.namespace) + ')'
+        : '剖面仅 <b>field</b> 命名空间可用（当前 ' + esc(s.namespace) + '）';
+      panelState('state-profile', 'empty', tr('Depth profiles available for field namespace only', '剖面仅 field 命名空间可用'));
+      HydroQCharts.clear('chart-profile');
+    }
     if (s.lat != null && s.lng != null && state.map) { try { state.map.flyTo([s.lat, s.lng], 7, { duration: 1.0 }); } catch (e) {} }
   }
   window.__pickStation = function (id) {
@@ -581,8 +627,8 @@ function runQueryApp() {
     if (!d) return;
     const sys = d.system || sysOf((d.station_id || '').split(':')[0]);
     const tag = '<span class="meta-tag ' + (sys === 'own' ? 'own' : 'app') + '">' + esc(sys) + '</span>';
-    let s = tag + '<b>' + esc(d.station_id || '') + '</b> · metric ' + esc(d.metric || '') + ' · interval ' + esc(d.interval || '-') + ' · 点数 ' + ((d.points || []).length);
-    if (d.qc_note) s += '<br/><span style="color:var(--muted)">qc_note：' + esc(d.qc_note) + '</span>';
+    let s = tag + '<b>' + esc(d.station_id || '') + '</b> · metric ' + esc(d.metric || '') + ' · interval ' + esc(d.interval || '-') + (isEn() ? ' · ' + ((d.points || []).length) + ' pts' : ' · 点数 ' + ((d.points || []).length));
+    if (d.qc_note) s += '<br/><span style="color:var(--muted)">' + (isEn() ? 'qc_note: ' : 'qc_note：') + esc(d.qc_note) + '</span>';
     el('series-meta').innerHTML = s;
   }
 
@@ -611,8 +657,8 @@ function runQueryApp() {
 
   function updateProfileMeta(d) {
     if (!d) return;
-    let s = '<span class="meta-tag own">own</span><b>' + esc(d.station_id || '') + '</b> · ' + esc(d.metric || '') + ' · depth_axis ' + esc(d.depth_axis || 'layer') + ' · 样本 ' + ((d.points || []).length);
-    if (d.qc_note) s += '<br/><span style="color:var(--muted)">qc_note：' + esc(d.qc_note) + '</span>';
+    let s = '<span class="meta-tag own">own</span><b>' + esc(d.station_id || '') + '</b> · ' + esc(d.metric || '') + ' · depth_axis ' + esc(d.depth_axis || 'layer') + (isEn() ? ' · ' + ((d.points || []).length) + ' samples' : ' · 样本 ' + ((d.points || []).length));
+    if (d.qc_note) s += '<br/><span style="color:var(--muted)">' + (isEn() ? 'qc_note: ' : 'qc_note：') + esc(d.qc_note) + '</span>';
     el('profile-meta').innerHTML = s;
   }
 
@@ -653,7 +699,9 @@ function runQueryApp() {
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 2000);
         resBox.className = 'banner ok';
-        resBox.innerHTML = '已下载 <b>' + esc(fname) + '</b>（' + fmtInt(blob.size) + ' 字节）。' + (checksum ? '<br/>X-Query-Checksum：<span style="word-break:break-all">' + esc(checksum) + '</span>' : '');
+        resBox.innerHTML = isEn()
+          ? 'Downloaded <b>' + esc(fname) + '</b> (' + fmtInt(blob.size) + ' bytes).' + (checksum ? '<br/>X-Query-Checksum: <span style="word-break:break-all">' + esc(checksum) + '</span>' : '')
+          : '已下载 <b>' + esc(fname) + '</b>（' + fmtInt(blob.size) + ' 字节）。' + (checksum ? '<br/>X-Query-Checksum：<span style="word-break:break-all">' + esc(checksum) + '</span>' : '');
         if (manifestRaw) {
           mBox.style.display = 'block';
           try { mBox.textContent = JSON.stringify(JSON.parse(manifestRaw), null, 2); }
@@ -677,15 +725,22 @@ function runQueryApp() {
     state.spatialMode = b.dataset.mode;
     el('fld-attime').style.display = state.spatialMode === 'at_time' ? 'block' : 'none';
     el('fld-traj').style.display = state.spatialMode === 'trajectory' ? 'block' : 'none';
-    const labels = { current: '当前位置', at_time: '指定时刻', trajectory: '轨迹相交' };
-    setText('mt-mode-label', '模式：' + labels[state.spatialMode]);
+    const labels = isEn()
+      ? { current: 'Current Position', at_time: 'At Timestamp', trajectory: 'Trajectory Intersect' }
+      : { current: '当前位置', at_time: '指定时刻', trajectory: '轨迹相交' };
+    setText('mt-mode-label', (isEn() ? 'Mode: ' : '模式：') + labels[state.spatialMode]);
     if (state.lastShape) runSpatial();
   }));
   el('mt-clear').addEventListener('click', () => {
     if (state.drawnItems) state.drawnItems.clearLayers();
     if (state.resultLayer) state.resultLayer.clearLayers();
     state.lastShape = null;
-    setStatusFloat('已清除。画框以查询站点。<b>deny by default</b>：未授权站点不返回。', null, []);
+    setStatusFloat(
+      isEn()
+        ? 'Cleared. Draw a box or polygon to query stations. <b>deny by default</b>: unauthorized stations are hidden.'
+        : '已清除。画框以查询站点。<b>deny by default</b>：未授权站点不返回。',
+      null, []
+    );
   });
   el('st-prev').addEventListener('click', () => { if (state.page > 1) { state.page--; loadStations(); } });
   el('st-next').addEventListener('click', () => { state.page++; loadStations(); });

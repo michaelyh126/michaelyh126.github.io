@@ -75,22 +75,22 @@ html, body {
 .header-center { display: flex; align-items: center; gap: 24px; }
 .hstat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .hstat-val { font-family: "Orbitron", sans-serif; font-size: 16px; font-weight: 700; color: var(--teal); line-height: 1; }
-.hstat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
+.hstat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; white-space: nowrap; }
 .hstat-divider { width: 1px; height: 28px; background: var(--panel-border); }
-.header-right { display: flex; align-items: center; gap: 14px; }
+.header-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 
 .status-chip {
-  display: flex; align-items: center; gap: 6px; padding: 5px 12px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
   background: rgba(0, 214, 143, 0.08); border: 1px solid rgba(0, 214, 143, 0.25);
-  border-radius: 20px; font-size: 11px; color: var(--success);
+  border-radius: 20px; font-size: 11px; color: var(--success); white-space: nowrap; flex-shrink: 0;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .status-chip.offline { background: rgba(255, 77, 106, 0.08); border-color: rgba(255, 77, 106, 0.3); color: var(--danger); }
 .status-chip.offline .pulse-dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
-.pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse-glow 2s ease-in-out infinite; }
+.pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); flex-shrink: 0; animation: pulse-glow 2s ease-in-out infinite; }
 @keyframes pulse-glow { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } }
-.time-display { font-family: "Orbitron", sans-serif; font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.08em; }
-.time-date { font-size: 9px; color: var(--muted); text-align: right; margin-top: 2px; }
+.time-display { font-family: "Orbitron", sans-serif; font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.08em; white-space: nowrap; }
+.time-date { font-size: 9px; color: var(--muted); text-align: right; margin-top: 2px; white-space: nowrap; }
 .logout-btn {
   background: rgba(255,77,106,0.08); border: 1px solid rgba(255,77,106,0.25); color: var(--danger);
   border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; font-family: inherit;

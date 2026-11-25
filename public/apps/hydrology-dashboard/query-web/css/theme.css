@@ -40,13 +40,14 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: "Noto Sans SC", -apple-system, sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 a, button, .btn, .seg-btn, .st-item, .chip, .tab, .legend-item { transition: 0.2s; }
 
 /* ════════ SHELL ════════ */
-.shell { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
+.shell { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
 
 /* ── HEADER ── */
 .header {
@@ -98,22 +99,22 @@ a, button, .btn, .seg-btn, .st-item, .chip, .tab, .legend-item { transition: 0.2
 
 /* ── BODY GRID ── */
 .body {
-  flex: 1; min-height: 0; overflow: hidden;
+  flex: 1; min-height: 0; overflow: visible;
   display: grid;
-  grid-template-columns: 360px 1fr;
-  grid-template-rows: 1.32fr 1fr;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: minmax(340px, 44vh) minmax(420px, auto);
   grid-template-areas:
     "rail map"
     "rail bottom";
   gap: 12px; padding: 12px;
 }
 .area-rail   { grid-area: rail; }
-.area-map    { grid-area: map; }
-.area-bottom { grid-area: bottom; min-height: 0; }
+.area-map    { grid-area: map; min-height: 340px; }
+.area-bottom { grid-area: bottom; min-height: 420px; }
 
 .bottom-grid {
-  display: grid; grid-template-columns: 1.15fr 1fr 320px; gap: 12px;
-  height: 100%; min-height: 0;
+  display: grid; grid-template-columns: 1.15fr 1fr 300px; gap: 12px;
+  height: 100%; min-height: 420px;
 }
 
 /* ── PANEL ── */
@@ -130,8 +131,8 @@ a, button, .btn, .seg-btn, .st-item, .chip, .tab, .legend-item { transition: 0.2
 .panel-title { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: 0.03em; display: flex; align-items: center; gap: 8px; }
 .panel-title .tag-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 .panel-sub { font-family: "Orbitron", sans-serif; font-size: 8px; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap; }
-.panel-body { flex: 1; min-height: 0; position: relative; }
-.chart-canvas { width: 100%; height: 100%; }
+.panel-body { flex: 1; min-height: 230px; position: relative; }
+.chart-canvas { width: 100%; height: 100%; min-height: 230px; }
 
 .note-strip {
   font-size: 9.5px; color: var(--muted); padding: 4px 13px; flex-shrink: 0;
@@ -312,19 +313,33 @@ a, button, .btn, .seg-btn, .st-item, .chip, .tab, .legend-item { transition: 0.2
 .popup-act:hover { background: rgba(0,212,200,0.3); }
 
 /* leaflet-draw dark restyle */
-.leaflet-draw-toolbar a { background-color: rgba(6,18,42,0.95) !important; border-bottom: 1px solid var(--panel-border) !important; }
-.leaflet-draw-toolbar a:hover { background-color: rgba(30,111,255,0.3) !important; }
-.leaflet-draw-actions a { background: rgba(6,18,42,0.96) !important; color: var(--text) !important; border-left: 1px solid var(--panel-border); }
-.leaflet-draw-actions a:hover { background: rgba(30,111,255,0.3) !important; }
+.leaflet-draw-toolbar a {
+  background-color: rgba(6,18,42,0.95) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--panel-border) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  color: #7dd3fc !important;
+  text-indent: 0 !important;
+}
+.leaflet-draw-toolbar a svg { width: 16px; height: 16px; display: block; stroke: currentColor; fill: none; }
+.leaflet-draw-toolbar a:hover { background-color: rgba(30,111,255,0.32) !important; color: #ffffff !important; }
+.leaflet-draw-toolbar a.leaflet-disabled { opacity: 0.52; color: #7eb8d4 !important; cursor: not-allowed; }
+.leaflet-draw-actions a { background-color: rgba(6,18,42,0.96) !important; color: var(--text) !important; border-left: 1px solid var(--panel-border); }
+.leaflet-draw-actions a:hover { background-color: rgba(30,111,255,0.3) !important; }
 .leaflet-bar { border: 1px solid var(--panel-border) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
-.leaflet-bar a { background: rgba(6,18,42,0.95) !important; color: var(--text) !important; border-bottom: 1px solid var(--panel-border) !important; }
-.leaflet-bar a:hover { background: rgba(30,111,255,0.3) !important; }
+.leaflet-bar a { background-color: rgba(6,18,42,0.95) !important; color: var(--text) !important; border-bottom: 1px solid var(--panel-border) !important; }
+.leaflet-bar a:hover { background-color: rgba(30,111,255,0.3) !important; }
 .leaflet-draw-tooltip { background: rgba(6,18,42,0.95); border: 1px solid var(--panel-border); color: var(--text); }
 .leaflet-draw-tooltip::before { border-right-color: rgba(6,18,42,0.95); }
 
 .map-toolbar {
-  position: absolute; top: 10px; left: 10px; z-index: 600; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-  background: rgba(6, 18, 42, 0.85); border: 1px solid var(--panel-border); border-radius: 10px; padding: 6px 8px;
+  position: absolute; top: 10px; left: 52px; z-index: 600; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  background: rgba(6, 18, 42, 0.88); border: 1px solid var(--panel-border); border-radius: 10px; padding: 6px 10px;
   backdrop-filter: blur(10px);
 }
 .map-toolbar .mt-seg { display: flex; background: rgba(14,30,60,0.7); border: 1px solid var(--panel-border); border-radius: 7px; overflow: hidden; }

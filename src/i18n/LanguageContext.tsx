@@ -4,6 +4,11 @@ export type Lang = 'en' | 'zh';
 
 export const LANG_STORAGE_KEY = 'portfolio_lang';
 
+const DOC_TITLES: Record<Lang, string> = {
+  en: 'Hao Yang — Geospatial, WebGIS & Full-Stack Systems Engineer',
+  zh: '杨昊 — WebGIS、空间数据与全栈系统工程师',
+};
+
 interface LanguageContextValue {
   lang: Lang;
   setLang: (next: Lang) => void;
@@ -13,10 +18,15 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
+/**
+ * Strictly resolves initial language as:
+ * 1) Explicit URL query ?lang=en|zh (including hash query like #/demos/devtools?lang=zh)
+ * 2) Persisted localStorage.getItem('portfolio_lang')
+ * 3) Strict 'en' default (NEVER reads navigator.language / Accept-Language)
+ */
 function readInitialLang(): Lang {
   if (typeof window === 'undefined') return 'en';
 
-  // 1. Query string ?lang=en|zh (including query inside hash like #/demos/devtools?lang=zh)
   try {
     const searchParam = new URLSearchParams(window.location.search).get('lang');
     const hashQuery = window.location.hash.includes('?')
@@ -31,7 +41,6 @@ function readInitialLang(): Lang {
     // Ignore URL/storage errors
   }
 
-  // 2. Persisted origin-wide localStorage key
   try {
     const stored = localStorage.getItem(LANG_STORAGE_KEY);
     if (stored === 'zh') return 'zh';
@@ -40,7 +49,6 @@ function readInitialLang(): Lang {
     // Ignore storage errors
   }
 
-  // 3. Default English-first
   return 'en';
 }
 
@@ -68,9 +76,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Sync <html lang="..."> and persist initial default if absent
+  // Sync <html lang>, <title>, and ensure default 'en' is persisted on first visit
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = DOC_TITLES[lang];
     try {
       if (!localStorage.getItem(LANG_STORAGE_KEY)) {
         localStorage.setItem(LANG_STORAGE_KEY, lang);

@@ -161,8 +161,8 @@
         "code": "MB-STA-08",
         "name": "Abyssal Fan Meander Station",
         "sector": "Lower Canyon",
-        "lng": -122.062,
-        "lat": 36.786,
+        "lng": -122.036,
+        "lat": 36.816,
         "temp_c": 3.2,
         "salinity_psu": 34.51,
         "feature_type": "Turbidity Sensor",
@@ -171,8 +171,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -122.062,
-          36.786,
+          -122.036,
+          36.816,
           -1049
         ]
       }

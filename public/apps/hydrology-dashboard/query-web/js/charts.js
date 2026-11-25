@@ -59,7 +59,7 @@
     const seriesData = pts.map(pt => [pt[0], pt[1]]);
     inst.setOption({
       backgroundColor: 'transparent',
-      grid: { top: 18, right: 18, bottom: 30, left: 52 },
+      grid: { top: 18, right: 18, bottom: 34, left: 52 },
       tooltip: Object.assign(baseTooltip(), {
         trigger: 'axis',
         formatter: (arr) => {
@@ -70,7 +70,7 @@
       }),
       xAxis: {
         type: 'time', axisLine: axisLineStyle(), axisTick: { show: false },
-        axisLabel: Object.assign(axisLabelStyle(), { hideOverlap: true }),
+        axisLabel: { color: cssVar('--muted'), fontSize: 10, hideOverlap: true, margin: 8 },
       },
       yAxis: {
         type: 'value', scale: true, name: metric,
@@ -119,7 +119,7 @@
 
     inst.setOption({
       backgroundColor: 'transparent',
-      grid: { top: 16, right: 18, bottom: 44, left: 46 },
+      grid: { top: 16, right: 18, bottom: 62, left: 46 },
       tooltip: Object.assign(baseTooltip(), {
         formatter: (p) => {
           const v = p.value; const ti = v[0], li = v[1], val = v[2], q = v[3];
@@ -130,13 +130,13 @@
       }),
       visualMap: {
         type: 'continuous', min: vmin, max: vmax, dimension: 2, seriesIndex: 0,
-        calculable: true, orient: 'horizontal', left: 'center', bottom: 0, itemWidth: 10, itemHeight: 60,
-        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 9 },
+        calculable: true, orient: 'horizontal', left: 'center', bottom: 2, itemWidth: 10, itemHeight: 72,
+        text: [pick('High', '高'), pick('Low', '低')], textStyle: { color: cssVar('--muted'), fontSize: 10 },
         inRange: { color: SCALE_STOPS }, show: hasVal,
       },
       xAxis: {
         type: 'category', data: xLabels, axisLine: axisLineStyle(), axisTick: { show: false },
-        axisLabel: Object.assign(axisLabelStyle(), { interval: Math.max(Math.floor(xLabels.length / 6), 0), hideOverlap: true }),
+        axisLabel: { color: cssVar('--muted'), fontSize: 10, interval: 'auto', hideOverlap: true, margin: 8 },
       },
       yAxis: {
         type: 'category', data: yLabels, name: pick('Layer', '层号'),

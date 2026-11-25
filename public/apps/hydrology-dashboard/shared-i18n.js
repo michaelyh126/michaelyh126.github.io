@@ -278,12 +278,13 @@
     [/^近30天趋势 · (.+)$/, '30d Trend · $1'],
     [/^流向约定：(.+)$/, 'Direction convention: $1'],
     [/^时区免责：(.+)$/, 'Timestamp note: $1'],
+    [/^第\s*(\d+)\s*个河口$/, 'Estuary $1'],
     [/^第\s+(\d+)\s*\/\s*(\d+)\s*页\s*·\s*共\s*([\d,]+)$/, 'Page $1 / $2 · Total $3'],
     [/^(\d+)\s*项$/, '$1 items'],
     [/^已下载\s+(.+?)（([\d,]+)\s*字节）。?$/, 'Downloaded $1 ($2 bytes).'],
     [/^命中\s*(\d+)\s*站点。?$/, 'Matched $1 stations.'],
-    [/^模式\s+(.+?)\s*·\s*命中\s+(\d+)\s*站点。?$/, 'Mode $1 · Matched $2 stations.'],
-    [/^模式\s+(.+?)\s*·\s*无匹配站点或未授权（deny by default，不泄露存在性）。?$/, 'Mode $1 · No matching stations in region (deny by default).'],
+    [/^模式\s+(.+?)\s*·\s*命中\s+(\d+)\s*站点。?$/, 'Mode: $1 · $2 stations matched'],
+    [/^模式\s+(.+?)\s*·\s*无匹配站点或未授权（deny by default，不泄露存在性）。?$/, 'Mode: $1 · 0 stations matched (deny by default).'],
     [/^（水深门禁默认关，不标实际水深 m）· 缺测层≠0 值 · qc=0=质量未知 · (.+)$/, ' (Depth gate off) · Missing ≠ 0 · qc=0 unknown · $1'],
     [/^剖面仅\s+(.+?)\s+命名空间可用（当前\s+(.+?)）$/, 'Profile available for $1 namespace only (current: $2)'],
     [/^已选 metric：(.+?)（(.+?)）$/, 'Selected metric: $1 ($2)'],
@@ -338,12 +339,19 @@
     ['层号', 'Layer'],
     ['深度', 'Depth'],
     ['无数据 / 未授权', 'No data in window'],
+    ['auth_note：', 'auth_note: '],
+    ['qc_note：', 'qc_note: '],
     ['、', ', '],
+    ['：', ': '],
+    ['（', ' ('],
+    ['）', ')'],
   ];
+
+  var CJK_OR_PUNCT_RE = /[\u4e00-\u9fa5\u3001\u3002\uff0c\uff1a\uff08\uff09]/;
 
   function translateText(raw) {
     if (!raw || typeof raw !== 'string') return raw;
-    if (!/[\u4e00-\u9fa5]/.test(raw)) return raw;
+    if (!CJK_OR_PUNCT_RE.test(raw)) return raw;
     var lead = raw.match(/^\s*/)[0];
     var trail = raw.match(/\s*$/)[0];
     var core = raw.trim();
@@ -353,8 +361,8 @@
       var rule = FRAGMENTS[i];
       if (rule[0].test(core)) {
         var out = core.replace(rule[0], rule[1]);
-        // Run inline cleanup on captured groups if any Chinese remains
-        if (/[\u4e00-\u9fa5]/.test(out)) {
+        // Run inline cleanup on captured groups if any Chinese or full-width punctuation remains
+        if (CJK_OR_PUNCT_RE.test(out)) {
           for (var k = 0; k < INLINE_TERMS.length; k++) {
             if (out.indexOf(INLINE_TERMS[k][0]) >= 0) {
               out = out.split(INLINE_TERMS[k][0]).join(INLINE_TERMS[k][1]);
@@ -386,7 +394,7 @@
       var val = node.nodeValue;
       if (!val || !val.trim()) return;
       if (currentLang === 'en') {
-        if (/[\u4e00-\u9fa5]/.test(val)) {
+        if (CJK_OR_PUNCT_RE.test(val)) {
           origTextMap.set(node, val);
           var translated = translateText(val);
           if (translated !== val) node.nodeValue = translated;
@@ -405,7 +413,7 @@
         if (!node.hasAttribute(attr)) continue;
         var cur = node.getAttribute(attr);
         if (currentLang === 'en') {
-          if (/[\u4e00-\u9fa5]/.test(cur)) {
+          if (CJK_OR_PUNCT_RE.test(cur)) {
             if (!savedAttrs) { savedAttrs = {}; origAttrMap.set(node, savedAttrs); }
             savedAttrs[attr] = cur;
             var t = translateText(cur);
