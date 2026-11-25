@@ -1,0 +1,112 @@
+{
+  "map3d": {
+    "templateValues": {
+      "dataServer": "./data",
+      "axiosServer": "/mock-api/"
+    },
+    "scene": {
+      "resolutionScale": 1,
+      "center": {
+        "lat": 36.685,
+        "lng": -122.035,
+        "alt": 12800,
+        "heading": 32,
+        "pitch": -42
+      },
+      "scene3DOnly": false,
+      "shadows": false,
+      "removeDblClick": true,
+      "sceneMode": 3,
+      "showSun": false,
+      "showMoon": false,
+      "showSkyBox": false,
+      "showSkyAtmosphere": true,
+      "fog": true,
+      "fxaa": true,
+      "maximumRenderTimeChange": 1,
+      "requestRenderMode": false,
+      "contextOptions": {
+        "requestWebgl1": false,
+        "webgl": {
+          "preserveDrawingBuffer": true
+        }
+      },
+      "globe": {
+        "depthTestAgainstTerrain": false,
+        "baseColor": "#0c223a",
+        "showGroundAtmosphere": true,
+        "enableLighting": false,
+        "maximumScreenSpaceError": 2
+      },
+      "cameraController": {
+        "zoomFactor": 3.0,
+        "minimumZoomDistance": 15,
+        "maximumZoomDistance": 50000000,
+        "enableRotate": true,
+        "enableTranslate": true,
+        "enableTilt": true,
+        "enableZoom": true,
+        "enableCollisionDetection": false,
+        "minimumCollisionTerrainHeight": 15000
+      }
+    },
+    "control": {
+      "homeButton": true,
+      "baseLayerPicker": false,
+      "sceneModePicker": true,
+      "vrButton": false,
+      "fullscreenButton": true,
+      "navigationHelpButton": true,
+      "animation": false,
+      "timeline": false,
+      "infoBox": false,
+      "geocoder": false,
+      "selectionIndicator": false,
+      "showRenderLoopErrors": false,
+      "contextmenu": { "hasDefault": true },
+      "mouseDownView": true,
+      "zoom": { "insertIndex": 1 },
+      "compass": { "bottom": "toolbar", "left": "5px" },
+      "distanceLegend": { "left": "10px", "bottom": "2px" },
+      "locationBar": {
+        "crs": "WGS84",
+        "crsDecimal": 4,
+        "template": "<div>Lng: {lng}°</div> <div>Lat: {lat}°</div> <div>Elev: {alt} m</div> <div class='hide700'>Zoom: {level}</div><div>Heading: {heading}°</div> <div>Pitch: {pitch}°</div><div class='hide700'>Cam Alt: {cameraHeight} m</div>"
+      }
+    },
+    "basemaps": [
+      { "id": 10, "name": "Basemaps", "type": "group" },
+      {
+        "pid": 10,
+        "name": "Esri World Imagery",
+        "icon": "img/basemaps/esriWorldImagery.png",
+        "type": "xyz",
+        "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        "show": true,
+        "minimumLevel": 1,
+        "maximumLevel": 18
+      },
+      {
+        "pid": 10,
+        "name": "Esri World Ocean Base",
+        "icon": "img/basemaps/sea.png",
+        "type": "xyz",
+        "url": "https://services.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
+        "enablePickFeatures": false,
+        "minimumLevel": 1,
+        "maximumLevel": 13
+      },
+      {
+        "pid": 10,
+        "name": "Esri World Dark Gray",
+        "icon": "img/basemaps/esriDarkGray.png",
+        "type": "xyz",
+        "url": "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        "enablePickFeatures": false,
+        "minimumLevel": 1,
+        "maximumLevel": 16
+      }
+    ],
+    "layers": []
+  }
+}

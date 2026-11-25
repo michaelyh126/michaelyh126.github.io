@@ -30,15 +30,15 @@ export interface CredentialItem {
 export const SERVICES: ServiceOffering[] = [
   {
     id: 'webgis',
-    tier: 'Track 01 · Geospatial',
-    title: 'Interactive WebGIS & Mapping Systems',
+    tier: 'Track 01 · 2D & 3D Geospatial',
+    title: 'Interactive WebGIS & 3D Mapping Systems',
     priceRange: 'From $1,200',
     timeline: '1 – 3 Weeks',
     idealFor: 'Climate-tech, maritime, ag-tech, logistics & environmental startups',
     description:
-      'Custom browser-native geospatial applications built with OpenLayers, MapLibre GL, or Leaflet—engineered for smooth raster pyramids, clean coordinate math, and real spatial analysis tools.',
+      'Custom browser-native 2D/3D geospatial applications built with OpenLayers, CesiumJS/Mars3D, or MapLibre GL—engineered for smooth raster pyramids, terrain analysis, and clean coordinate math.',
     deliverables: [
-      'Interactive map studio (layer catalog, filters, swipe compare, geodesic measure)',
+      'Interactive 2D/3D map studio (layer catalog, swipe compare, terrain & geodesic tools)',
       'GeoTIFF / Shapefile / GeoJSON ingestion & Web Mercator tile pyramid pipeline',
       'Synchronized telemetry inspector, charts & responsive mobile/desktop UI',
       'Clean TypeScript codebase + automated Playwright visual walkthrough video',
@@ -53,7 +53,7 @@ export const SERVICES: ServiceOffering[] = [
     timeline: '2 – 4 Weeks',
     idealFor: 'IoT networks, hydro-met observatories, energy & analytics teams',
     description:
-      'Reliable multi-source data ingestion pipelines and sub-second analytical dashboards powered by FastAPI, PostgreSQL/TimescaleDB, Redis, and ECharts/React.',
+      'Reliable multi-source data ingestion pipelines and sub-second analytical dashboards powered by FastAPI, PostgreSQL/TimescaleDB, WebSockets, Redis, and ECharts/React.',
     deliverables: [
       'Multi-source scheduled/streaming collectors with schema validation & retries',
       'TimescaleDB hypertable schema design, indexing & REST/WebSocket APIs',
@@ -106,35 +106,34 @@ export const DELIVERY_STEPS = [
 
 export const STACK_MATRIX: StackGroup[] = [
   {
-    category: 'Geospatial & WebGIS',
-    subtitle: 'Mapping, projections & raster pipelines',
+    category: 'Geospatial & 3D WebGIS',
+    subtitle: '2D/3D mapping, terrain & raster pipelines',
     items: [
       'OpenLayers 10',
+      'CesiumJS / Mars3D',
       'MapLibre GL',
+      'Three.js',
       'GeoTIFF / COG',
       'Turf.js',
       'Web Mercator (EPSG:3857)',
-      'WGS84 / GeoJSON',
       'GDAL / Tile Pyramids',
-      'PostGIS',
-      'ArcPy / Shapefile',
+      'PostGIS / ArcPy',
     ],
   },
   {
     category: 'Full-Stack & Real-Time Data',
-    subtitle: 'Web apps, APIs & time-series storage',
+    subtitle: 'Web apps, WebSockets & time-series storage',
     items: [
       'React 19',
-      'Vue 3 / Pinia',
+      'Vue 2 / Vue 3 / Pinia',
       'TypeScript',
-      'Tailwind CSS',
+      'Tailwind CSS / AntD',
       'FastAPI',
       'Express / Node.js',
       'Spring Boot 3 / Java 21',
       'PostgreSQL / TimescaleDB',
-      'MySQL',
-      'Redis',
-      'ECharts / Three.js',
+      'MySQL / Redis',
+      'WebSocket / ECharts / DataV',
     ],
   },
   {
@@ -180,26 +179,26 @@ export const CREDENTIALS: CredentialItem[] = [
     ],
   },
   {
-    period: '2025 – 2026',
+    period: '2026',
     role: 'Full-Stack & Geospatial Platform Engineer (Intern)',
     organization: 'East China Normal University · Research & Data Platform',
     location: 'Shanghai, China',
-    tag: 'Production Engineering',
+    tag: 'AI-Era Production Engineering',
     highlights: [
-      'Built & maintained coastal blue-carbon WebGIS dashboards (Vue 3 / FastAPI), rebuilding 8 yearly GeoTIFF tile pyramids in Web Mercator (Z6–Z11) to eliminate projection drift.',
+      'Built & maintained coastal blue-carbon WebGIS dashboards (Vue 3 / MapLibre / FastAPI), rebuilding 8 yearly GeoTIFF tile pyramids in Web Mercator (Z6–Z11) to eliminate projection drift.',
       'Engineered multi-source hydrological data pipelines (PostgreSQL / TimescaleDB) aggregating 18 data sources (NOAA, ISD, METAR, regional networks) across ~25,000 stations.',
       'Automated CMS auditing & batch publishing across 4,207 articles (724 reformatted with read-back verification) and managed Linux / Nginx / systemd production deployments.',
     ],
   },
   {
-    period: '2020.09 – 2024.06',
-    role: 'B.Eng. in Spatial Information & Digital Technology',
-    organization: 'Shanghai Ocean University',
+    period: '2020.09 – 2025.09',
+    role: 'B.Eng. in Spatial Information & Hand-Crafted 3D GIS / IoT Foundations',
+    organization: 'Shanghai Ocean University & Pre-AI Engineering Projects',
     location: 'Shanghai, China',
-    tag: 'Geospatial Foundation',
+    tag: 'Pre-AI Hand-Crafted Track',
     highlights: [
-      'Four-year foundation in GIS algorithms, spatial databases, remote sensing, cartographic projections, and software engineering.',
-      'Developed automated Python + ArcPy + Flask geospatial processing services for smart agriculture Shapefile/TIFF pipelines.',
+      'Shipped 132-commit 3D Marine Bathymetry Workbench (Vue 3 + CesiumJS 1.123 / Mars3D 3.8), Tropical Cyclone 950-particle Wind-Field Platform (Vue 2 + DataV), and SmartRFID WebSocket IoT Monitor (Vue 2 + Spring Boot).',
+      'Four-year B.Eng. foundation (2020–2024) in GIS algorithms, spatial databases, remote sensing, cartographic projections, and Python/ArcPy/Flask services.',
       'Credentials: CET-6 English Proficiency · Shanghai Municipal Higher Education IT Proficiency Certificate (Excellence).',
     ],
   },
@@ -210,15 +209,15 @@ export function getServices(lang: Lang): ServiceOffering[] {
   return [
     {
       ...SERVICES[0],
-      tier: '方向 01 · 空间地理 WebGIS',
-      title: '交互式 WebGIS 与地图系统定制',
+      tier: '方向 01 · 二三维空间地理 WebGIS',
+      title: '交互式二三维 WebGIS 与地图系统定制',
       priceRange: '$1,200 起',
       timeline: '1 – 3 周',
       idealFor: '气候科技、海洋科研、智慧农业、物流与环保团队',
       description:
-        '基于 OpenLayers 10、MapLibre GL 或 Leaflet 定制浏览器原生空间应用，解决栅格切片投影精度、海量矢量交互与专业空间分析工具落地。',
+        '基于 OpenLayers 10、CesiumJS / Mars3D 或 MapLibre GL 定制浏览器原生二三维空间应用，解决栅格切片投影精度、三维地形开挖与空间分析工具落地。',
       deliverables: [
-        '交互式一张图工作台（图层目录、过滤、卷帘对比、球面量测）',
+        '交互式二三维一张图工作台（图层目录、卷帘对比、三维地形与球面量测）',
         'GeoTIFF / Shapefile / GeoJSON 清洗与 Web Mercator 切片管线',
         '联动时序监测图表、属性检视器与桌面/移动端响应式 UI',
         '整洁 TypeScript 源码 + 自动化 Playwright 视觉验收视频',
@@ -226,13 +225,13 @@ export function getServices(lang: Lang): ServiceOffering[] {
     },
     {
       ...SERVICES[1],
-      tier: '方向 02 · 实时数据工程',
+      tier: '方向 02 · 实时数据与物联网工程',
       title: '多源时序监测与数据大屏平台',
       priceRange: '$1,500 起',
       timeline: '2 – 4 周',
       idealFor: '物联网站网、水文气象观测、能源与实时数据分析团队',
       description:
-        '依托 FastAPI、PostgreSQL / TimescaleDB、Redis 与 ECharts / React 打造高可靠多源采集流水线与亚秒级响应监测看板。',
+        '依托 FastAPI、PostgreSQL / TimescaleDB、WebSocket、Redis 与 ECharts / React 打造高可靠多源采集流水线与亚秒级响应监测看板。',
       deliverables: [
         '多源定时/流式采集器，支持 schema 校验、断点重试与异常告警',
         'TimescaleDB 超表建模、索引优化与 REST / WebSocket 接口',
@@ -288,8 +287,8 @@ export function getDeliverySteps(lang: Lang) {
 export function getStackMatrix(lang: Lang): StackGroup[] {
   if (lang === 'en') return STACK_MATRIX;
   return [
-    { ...STACK_MATRIX[0], category: '空间地理与 WebGIS', subtitle: '地图渲染、坐标投影与栅格切片' },
-    { ...STACK_MATRIX[1], category: '全栈与实时数据', subtitle: 'Web 应用、后端接口与时序存储' },
+    { ...STACK_MATRIX[0], category: '二三维空间地理与 WebGIS', subtitle: '2D/3D 地图渲染、地形分析与栅格切片' },
+    { ...STACK_MATRIX[1], category: '全栈与实时数据', subtitle: 'Web 应用、WebSocket 与时序存储' },
     { ...STACK_MATRIX[2], category: 'AI 与计算机视觉', subtitle: '学术研究与高分辨率模型推理' },
     { ...STACK_MATRIX[3], category: '系统、运维与 QA', subtitle: '并发可靠、生产部署与自动测试' },
   ];
@@ -310,26 +309,26 @@ export function getCredentials(lang: Lang): CredentialItem[] {
       ],
     },
     {
-      period: '2025 – 2026',
+      period: '2026',
       role: '科研数据平台与 WebGIS 全栈开发（实习）',
       organization: '华东师范大学 · 科研平台开发与网站维护',
       location: '中国 · 上海',
-      tag: '生产平台落地',
+      tag: 'AI 时代生产平台',
       highlights: [
-        '参与蓝碳 WebGIS 平台（Vue 3 / FastAPI）开发与地图联调，定位旧切片投影偏移并按 Web Mercator 重建 8 个年份 GeoTIFF 切片（Z6–Z11）。',
+        '参与蓝碳 WebGIS 平台（Vue 3 / MapLibre / FastAPI）开发与地图联调，定位旧切片投影偏移并按 Web Mercator 重建 8 个年份 GeoTIFF 切片（Z6–Z11）。',
         '参与多源水文平台开发，基于 PostgreSQL / TimescaleDB 接入 NOAA、ISD、METAR 等 18 个来源、约 2.5 万条站点记录并交付监测大屏。',
         '借助 AI 编写 CMS 批处理管线，整理 4,207 篇文章源码并完成 724 篇格式重构与回读校验，负责 Linux / Nginx / systemd 部署运维。',
       ],
     },
     {
-      period: '2020.09 – 2024.06',
-      role: '空间信息与数字技术 · 工学学士',
-      organization: '上海海洋大学',
+      period: '2020.09 – 2025.09',
+      role: '空间信息工学学士与前 AI 时代纯手搓工程沉淀',
+      organization: '上海海洋大学 · 三维 GIS / 气象大屏 / 物联网工程',
       location: '中国 · 上海',
-      tag: '空间信息基础',
+      tag: '前 AI 纯手搓基础',
       highlights: [
-        '系统掌握 GIS 空间算法、空间数据库、遥感原理、地图投影与全栈软件工程。',
-        '使用 Python、ArcPy 与 Flask 构建智慧农业 Shapefile / TIFF 自动化地图服务发布接口。',
+        '纯手工交付 132 次提交的三维海洋地形工作台（Vue 3 + CesiumJS 1.123 / Mars3D 3.8）、950 粒子台风可视化大屏（Vue 2 + DataV）及 SmartRFID 实时物联网监控平台（Vue 2 + Spring Boot / WebSocket）。',
+        '2020–2024 本科系统修习 GIS 算法、空间数据库、遥感原理、地图投影及 Python / ArcPy / Flask 服务开发。',
         '资质证书：大学英语六级 (CET-6) · 上海市高等学校信息技术水平考试优秀证书。',
       ],
     },

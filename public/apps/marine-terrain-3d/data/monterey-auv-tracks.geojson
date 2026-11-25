@@ -1,0 +1,199 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "AUV-MB-01",
+        "name": "AUV Axial Thalweg Transect #1",
+        "vehicle": "Nautilus-AUV-04",
+        "sonar_khz": 200,
+        "swath_m": 420,
+        "depth_range": "-320 m to -1,310 m"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -121.825,
+            36.812,
+            -643
+          ],
+          [
+            -121.86,
+            36.818,
+            -1170
+          ],
+          [
+            -121.895,
+            36.814,
+            -1540
+          ],
+          [
+            -121.93,
+            36.803,
+            -1434
+          ],
+          [
+            -121.965,
+            36.79,
+            -1599
+          ],
+          [
+            -122.005,
+            36.774,
+            -1563
+          ],
+          [
+            -122.055,
+            36.77,
+            -1209
+          ],
+          [
+            -122.1,
+            36.784,
+            -1334
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "AUV-MB-02",
+        "name": "Soquel Branch Cross-Canyon Grid",
+        "vehicle": "Nautilus-AUV-04",
+        "sonar_khz": 400,
+        "swath_m": 260,
+        "depth_range": "-180 m to -890 m"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -121.975,
+            36.865,
+            -493
+          ],
+          [
+            -121.915,
+            36.865,
+            -563
+          ],
+          [
+            -121.915,
+            36.842,
+            -995
+          ],
+          [
+            -121.975,
+            36.842,
+            -376
+          ],
+          [
+            -121.975,
+            36.818,
+            -581
+          ],
+          [
+            -121.915,
+            36.818,
+            -1812
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "AUV-MB-03",
+        "name": "Outer Seamount & Carmel Confluence Survey",
+        "vehicle": "Benthos-Glider-02",
+        "sonar_khz": 100,
+        "swath_m": 650,
+        "depth_range": "-290 m to -1,220 m"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -122.095,
+            36.755,
+            -1001
+          ],
+          [
+            -122.055,
+            36.748,
+            -742
+          ],
+          [
+            -122.015,
+            36.742,
+            -662
+          ],
+          [
+            -121.965,
+            36.746,
+            -564
+          ],
+          [
+            -121.92,
+            36.756,
+            -816
+          ],
+          [
+            -121.895,
+            36.732,
+            -474
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "AUV-MB-04",
+        "name": "North Canyon Rim Escarpment Profile",
+        "vehicle": "Benthos-Glider-02",
+        "sonar_khz": 200,
+        "swath_m": 380,
+        "depth_range": "-150 m to -960 m"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -122.04,
+            36.855,
+            -455
+          ],
+          [
+            -122.005,
+            36.848,
+            -232
+          ],
+          [
+            -121.98,
+            36.822,
+            -508
+          ],
+          [
+            -121.96,
+            36.795,
+            -1613
+          ],
+          [
+            -121.945,
+            36.765,
+            -804
+          ],
+          [
+            -121.93,
+            36.735,
+            -875
+          ]
+        ]
+      }
+    }
+  ]
+}

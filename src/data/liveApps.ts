@@ -1,13 +1,18 @@
 import type { DemoId } from '../demos/registry';
 import type { Lang } from '../i18n/LanguageContext';
 
+export type EngineeringEra = 'pre-ai' | 'ai-era';
+
 export type LiveAppCategory =
-  | 'Geospatial & Data'
-  | 'Salon 4-Terminal SaaS'
-  | 'AI, Audio & Systems';
+  | 'Pre-AI Hand-Crafted (2021–2025)'
+  | 'AI-Era Geospatial & Data (2026)'
+  | 'AI-Era Salon 4-Terminal SaaS (2026)'
+  | 'AI-Era Audio & DevTools (2026)';
 
 export interface LiveAppEntry {
   id: string;
+  era: EngineeringEra;
+  period: string;
   label: string;
   shortLabel: string;
   category: LiveAppCategory;
@@ -19,125 +24,206 @@ export interface LiveAppEntry {
 }
 
 export const LIVE_APPS: LiveAppEntry[] = [
+  // ================= PRE-AI HAND-CRAFTED ERA (2021 – 2025) =================
+  {
+    id: 'marine-terrain-3d',
+    era: 'pre-ai',
+    period: '2024.11 – 2025.09',
+    label: '3D Marine Bathymetry & Terrain Workbench',
+    shortLabel: '3D Marine Terrain',
+    category: 'Pre-AI Hand-Crafted (2021–2025)',
+    href: '/apps/marine-terrain-3d/',
+    stackTag: 'Vue 3 · Mars3D / CesiumJS',
+    isOriginal: true,
+  },
+  {
+    id: 'typhoon-center',
+    era: 'pre-ai',
+    period: '2023.03 – 2024.02',
+    label: 'Tropical Cyclone Intelligence Platform',
+    shortLabel: 'Typhoon Center',
+    category: 'Pre-AI Hand-Crafted (2021–2025)',
+    href: '/apps/typhoon-center/',
+    stackTag: 'Vue 2 · DataV · Wind Canvas',
+    isOriginal: true,
+  },
+  {
+    id: 'rfid-iot-monitor',
+    era: 'pre-ai',
+    period: '2021.11 – 2021.12',
+    label: 'SmartRFID · IoT Asset & Archive Monitor',
+    shortLabel: 'SmartRFID IoT',
+    category: 'Pre-AI Hand-Crafted (2021–2025)',
+    href: '/apps/rfid-iot-monitor/',
+    stackTag: 'Vue 2 · WebSocket · Spring',
+    isOriginal: true,
+  },
+  {
+    id: 'sbupnet-lab',
+    era: 'pre-ai',
+    period: '2024.11 – 2025.08',
+    label: 'SBUPNet · IEEE SMC 2026 Benchmark Lab',
+    shortLabel: 'SBUPNet (IEEE ’26)',
+    category: 'Pre-AI Hand-Crafted (2021–2025)',
+    href: '#/demos/ai-lab',
+    stackTag: 'PyTorch · 76.5% mIoU',
+    sandboxId: 'ai-lab',
+    isOriginal: false,
+  },
+
+  // ================= AI-ASSISTED ERA (2026) =================
   {
     id: 'webgis-workbench',
+    era: 'ai-era',
+    period: '2026.10',
     label: 'WebGIS One-Map Workbench',
     shortLabel: 'WebGIS One-Map',
-    category: 'Geospatial & Data',
+    category: 'AI-Era Geospatial & Data (2026)',
     href: '/apps/webgis-workbench/',
     stackTag: 'React · OL 10 · Turf',
     isOriginal: true,
   },
   {
     id: 'blue-carbon',
+    era: 'ai-era',
+    period: '2026.09 – 2026.10',
     label: 'Coastal Blue Carbon Platform',
     shortLabel: 'Blue Carbon (Vue 3)',
-    category: 'Geospatial & Data',
+    category: 'AI-Era Geospatial & Data (2026)',
     href: '/apps/blue-carbon/',
     stackTag: 'Vue 3 · MapLibre GL',
     isOriginal: true,
   },
   {
     id: 'hydrology-dashboard',
+    era: 'ai-era',
+    period: '2026.07 – 2026.10',
     label: 'Multi-Source Hydrology Platform',
     shortLabel: 'Hydrology (3-View)',
-    category: 'Geospatial & Data',
+    category: 'AI-Era Geospatial & Data (2026)',
     href: '/apps/hydrology-dashboard/',
     stackTag: 'Big Screen · Query Web',
     isOriginal: true,
   },
   {
     id: 'open-data-portal',
+    era: 'ai-era',
+    period: '2026.09 – 2026.11',
     label: 'OceanData Open Data Portal',
     shortLabel: 'OceanData Portal',
-    category: 'Geospatial & Data',
+    category: 'AI-Era Geospatial & Data (2026)',
     href: '/apps/open-data-portal/',
     stackTag: 'Three.js Globe · OL',
     isOriginal: true,
   },
   {
     id: 'data-share-admin',
+    era: 'ai-era',
+    period: '2026.09 – 2026.11',
     label: 'DataHub Admin & RBAC Console',
     shortLabel: 'DataHub Admin',
-    category: 'Geospatial & Data',
+    category: 'AI-Era Geospatial & Data (2026)',
     href: '/apps/data-share-admin/',
     stackTag: 'AntD · ApexCharts',
     isOriginal: true,
   },
   {
     id: 'salon-admin',
+    era: 'ai-era',
+    period: '2026.11',
     label: 'Salon SaaS · Desktop Admin',
     shortLabel: 'PC Admin',
-    category: 'Salon 4-Terminal SaaS',
+    category: 'AI-Era Salon 4-Terminal SaaS (2026)',
     href: '/apps/salon-admin/',
     stackTag: 'React 19 · EOD · RBAC',
     isOriginal: true,
   },
   {
     id: 'salon-pos',
+    era: 'ai-era',
+    period: '2026.11',
     label: 'Salon SaaS · Mobile Cashier POS',
     shortLabel: 'Mobile POS',
-    category: 'Salon 4-Terminal SaaS',
+    category: 'AI-Era Salon 4-Terminal SaaS (2026)',
     href: '/apps/salon-admin/#/mobile',
     stackTag: 'Direct-QR · Wallet',
     isOriginal: true,
   },
   {
     id: 'salon-customer',
+    era: 'ai-era',
+    period: '2026.11',
     label: 'Salon SaaS · Customer Mini-App H5',
     shortLabel: 'Customer H5',
-    category: 'Salon 4-Terminal SaaS',
+    category: 'AI-Era Salon 4-Terminal SaaS (2026)',
     href: '/apps/salon-customer/',
     stackTag: 'UniApp H5 · Synced',
     isOriginal: true,
   },
   {
     id: 'salon-barber',
+    era: 'ai-era',
+    period: '2026.11',
     label: 'Salon SaaS · Barber Workbench H5',
     shortLabel: 'Barber H5',
-    category: 'Salon 4-Terminal SaaS',
+    category: 'AI-Era Salon 4-Terminal SaaS (2026)',
     href: '/apps/salon-barber/',
     stackTag: 'UniApp H5 · Synced',
     isOriginal: true,
   },
   {
     id: 'sound-ai',
+    era: 'ai-era',
+    period: '2026.10',
     label: 'Sound-AI Bio-Acoustic Platform',
     shortLabel: 'Sound-AI Studio',
-    category: 'AI, Audio & Systems',
+    category: 'AI-Era Audio & DevTools (2026)',
     href: '/apps/sound-ai/',
     stackTag: 'React 19 · WAV Canvas',
     isOriginal: true,
   },
   {
     id: 'devtools-sandbox',
+    era: 'ai-era',
+    period: '2026.10 – 2026.11',
     label: 'ai-file-lock & qa-cli Simulator',
     shortLabel: 'FileLock & QA CLI',
-    category: 'AI, Audio & Systems',
+    category: 'AI-Era Audio & DevTools (2026)',
     href: '#/demos/devtools',
     stackTag: 'FUSE · Playwright QA',
     sandboxId: 'devtools',
     isOriginal: false,
   },
-  {
-    id: 'sbupnet-lab',
-    label: 'SBUPNet IEEE SMC ’26 Lab',
-    shortLabel: 'SBUPNet Lab',
-    category: 'AI, Audio & Systems',
-    href: '#/demos/ai-lab',
-    stackTag: '76.5% mIoU · 9.49 FPS',
-    sandboxId: 'ai-lab',
-    isOriginal: false,
-  },
 ];
 
 export const LIVE_APP_GROUPS: LiveAppCategory[] = [
-  'Geospatial & Data',
-  'Salon 4-Terminal SaaS',
-  'AI, Audio & Systems',
+  'Pre-AI Hand-Crafted (2021–2025)',
+  'AI-Era Geospatial & Data (2026)',
+  'AI-Era Salon 4-Terminal SaaS (2026)',
+  'AI-Era Audio & DevTools (2026)',
 ];
 
 const ZH_APP_OVERRIDES: Record<string, { label: string; shortLabel: string; stackTag: string }> = {
+  'marine-terrain-3d': {
+    label: '三维海洋地形与水深分析工作台',
+    shortLabel: '三维海洋地形 3D',
+    stackTag: 'Vue 3 · Mars3D / CesiumJS',
+  },
+  'typhoon-center': {
+    label: '热带气旋智能监测与可视化大屏',
+    shortLabel: '台风态势大屏',
+    stackTag: 'Vue 2 · DataV · 粒子风场',
+  },
+  'rfid-iot-monitor': {
+    label: 'SmartRFID · 物联网资产与档案监控',
+    shortLabel: 'SmartRFID 监控',
+    stackTag: 'Vue 2 · WebSocket · Spring',
+  },
+  'sbupnet-lab': {
+    label: 'SBUPNet · IEEE SMC 2026 基准台',
+    shortLabel: 'SBUPNet 论文台',
+    stackTag: 'PyTorch · 76.5% mIoU',
+  },
   'webgis-workbench': {
     label: 'WebGIS 一张图工作台',
     shortLabel: 'WebGIS 一张图',
@@ -193,11 +279,6 @@ const ZH_APP_OVERRIDES: Record<string, { label: string; shortLabel: string; stac
     shortLabel: '文件锁 & QA 沙盒',
     stackTag: 'FUSE · Playwright QA',
   },
-  'sbupnet-lab': {
-    label: 'SBUPNet (IEEE SMC ’26) 基准台',
-    shortLabel: 'SBUPNet 论文实验',
-    stackTag: '76.5% mIoU · 9.49 FPS',
-  },
 };
 
 export function getLiveApps(lang: Lang): LiveAppEntry[] {
@@ -211,11 +292,13 @@ export function getLiveApps(lang: Lang): LiveAppEntry[] {
 export function getLiveAppGroupLabel(group: LiveAppCategory, lang: Lang): string {
   if (lang === 'en') return group;
   switch (group) {
-    case 'Geospatial & Data':
-      return '空间地理与实时数据（原始前端）';
-    case 'Salon 4-Terminal SaaS':
-      return '美发四端商业 SaaS（实时联动）';
-    case 'AI, Audio & Systems':
-      return 'AI 声学标注与系统工具沙盒';
+    case 'Pre-AI Hand-Crafted (2021–2025)':
+      return '前 AI 时代 · 纯手搓基础工程 (2021–2025)';
+    case 'AI-Era Geospatial & Data (2026)':
+      return 'AI 时代 · 空间地理与数据平台 (2026)';
+    case 'AI-Era Salon 4-Terminal SaaS (2026)':
+      return 'AI 时代 · 美发四端商业 SaaS (2026)';
+    case 'AI-Era Audio & DevTools (2026)':
+      return 'AI 时代 · 声学标注与系统工具 (2026)';
   }
 }

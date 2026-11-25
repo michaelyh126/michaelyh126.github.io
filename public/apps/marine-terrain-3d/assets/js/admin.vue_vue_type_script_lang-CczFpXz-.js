@@ -1,0 +1,1 @@
+import{a as e}from"./axios-utUJUQYZ.js";const s=()=>e.get("/user/list").then(e=>e.data),t=s=>e.get("/user/delete",{params:{userId:s}}).then(e=>e.data),a={name:"Admin",methods:{fetchList(){s()}}};export{a as _,t as d,s as g};

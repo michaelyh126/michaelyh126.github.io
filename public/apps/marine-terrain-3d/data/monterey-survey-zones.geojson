@@ -1,0 +1,233 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-01",
+        "name": "Monterey Canyon Central Axis",
+        "sector": "Monterey Bay Sanctuary",
+        "category": "Submarine Canyon",
+        "area_km2": 48.6,
+        "max_depth_m": -1295
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.995,
+              36.818
+            ],
+            [
+              -121.905,
+              36.818
+            ],
+            [
+              -121.905,
+              36.772
+            ],
+            [
+              -121.995,
+              36.772
+            ],
+            [
+              -121.995,
+              36.818
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-02",
+        "name": "Soquel Tributary Canyon Sector",
+        "sector": "North Monterey Shelf",
+        "category": "Tributary Canyon",
+        "area_km2": 34.2,
+        "max_depth_m": -860
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.985,
+              36.88
+            ],
+            [
+              -121.895,
+              36.88
+            ],
+            [
+              -121.895,
+              36.824
+            ],
+            [
+              -121.985,
+              36.824
+            ],
+            [
+              -121.985,
+              36.88
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-03",
+        "name": "Outer Seamount & Ridge Reserve",
+        "sector": "Pacific Abyssal Margin",
+        "category": "Seamount Ridge",
+        "area_km2": 52.4,
+        "max_depth_m": -1180
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.105,
+              36.778
+            ],
+            [
+              -122.01,
+              36.778
+            ],
+            [
+              -122.01,
+              36.718
+            ],
+            [
+              -122.105,
+              36.718
+            ],
+            [
+              -122.105,
+              36.778
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-04",
+        "name": "Carmel Branch Canyon Slope",
+        "sector": "South Monterey Margin",
+        "category": "Tributary Slope",
+        "area_km2": 31.8,
+        "max_depth_m": -840
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.982,
+              36.768
+            ],
+            [
+              -121.892,
+              36.768
+            ],
+            [
+              -121.892,
+              36.718
+            ],
+            [
+              -121.982,
+              36.718
+            ],
+            [
+              -121.982,
+              36.768
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-05",
+        "name": "North Canyon Rim Cold Seep Belt",
+        "sector": "Northern Flank Ridge",
+        "category": "Cold Seep Habitat",
+        "area_km2": 39.1,
+        "max_depth_m": -740
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.055,
+              36.882
+            ],
+            [
+              -121.965,
+              36.882
+            ],
+            [
+              -121.965,
+              36.828
+            ],
+            [
+              -122.055,
+              36.828
+            ],
+            [
+              -122.055,
+              36.882
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MZ-06",
+        "name": "Upper Shelf Headland & Observatory",
+        "sector": "Moss Landing Approach",
+        "category": "Continental Shelf",
+        "area_km2": 29.5,
+        "max_depth_m": -510
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.892,
+              36.836
+            ],
+            [
+              -121.815,
+              36.836
+            ],
+            [
+              -121.815,
+              36.776
+            ],
+            [
+              -121.892,
+              36.776
+            ],
+            [
+              -121.892,
+              36.836
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -45,11 +45,11 @@ export interface ProfileConfig {
 export const PROFILE: ProfileConfig = {
   name: 'Hao Yang',
   handle: 'michaelyh126',
-  role: 'Geospatial & Full-Stack Systems Engineer',
-  shortRole: 'WebGIS · Telemetry · Full-Stack SaaS',
-  headline: 'Engineering precision WebGIS studios, real-time data platforms & production SaaS.',
+  role: 'Geospatial, 3D WebGIS & Full-Stack Systems Engineer',
+  shortRole: '2D/3D WebGIS · Telemetry · Full-Stack SaaS',
+  headline: 'Engineering precision 2D/3D WebGIS studios, real-time data platforms & production SaaS.',
   subheadline:
-    'M.S. Computer Science candidate & IEEE SMC 2026 first author. I help climate-tech, logistics, research, and SaaS teams ship interactive OpenLayers geospatial apps, high-density time-series pipelines, and full-stack products backed by automated Playwright video QA.',
+    'M.S. CS candidate & IEEE SMC 2026 first author. Combining 4 years of hand-crafted 3D CesiumJS, Canvas, WebSocket & PyTorch fundamentals (2021–2025) with AI-accelerated full-stack shipping & automated Playwright QA (2026) — 12 live deployed apps ready to test.',
   availabilityBadge: 'Available for Remote Contracts & Freelance · UTC+8 Async-Friendly',
   location: 'Shanghai, China',
   timezone: 'UTC+8 (Asia/Shanghai)',
@@ -63,21 +63,21 @@ export const PROFILE: ProfileConfig = {
       label: 'GitHub',
       handle: '@michaelyh126',
       url: 'https://github.com/michaelyh126',
-      note: 'Open-source systems, multi-terminal SaaS & verification suites',
+      note: 'Profile hub linking all 12 live deployed apps across Pre-AI & AI eras',
     },
     {
       id: 'upwork',
       label: 'Upwork',
       handle: 'Hourly & Fixed Milestones',
       url: '', // <-- Paste your Upwork profile URL here, e.g. 'https://www.upwork.com/freelancers/~01...'
-      note: 'Escrow-protected contracts for WebGIS, FastAPI & React SaaS',
+      note: 'Escrow-protected contracts for 2D/3D WebGIS, FastAPI & React SaaS',
     },
     {
       id: 'fiverr',
       label: 'Fiverr',
       handle: 'Scoped Productized Gigs',
       url: '', // <-- Paste your Fiverr profile URL here, e.g. 'https://www.fiverr.com/...'
-      note: 'Rapid OpenLayers maps, GeoTIFF pipelines & MVP sprints',
+      note: 'Rapid OpenLayers / CesiumJS maps, GeoTIFF pipelines & MVP sprints',
     },
     {
       id: 'wellfound',
@@ -96,9 +96,9 @@ export const PROFILE: ProfileConfig = {
   ],
   credibilityMetrics: [
     {
-      value: 'M.S. CS',
-      label: 'Shanghai Ocean Univ. (2027)',
-      detail: 'B.Eng. Spatial Info & Digital Tech',
+      value: '12 Live Apps',
+      label: '3 Pre-AI + 9 AI-Era Deployed',
+      detail: '100% Synthetic Data · Zero Login',
     },
     {
       value: 'IEEE SMC ’26',
@@ -111,9 +111,9 @@ export const PROFILE: ProfileConfig = {
       detail: 'TimescaleDB + FastAPI Telemetry',
     },
     {
-      value: '128-Proc',
-      label: 'Author · ai-file-lock',
-      detail: 'FUSE / WinFsp Concurrency Guard',
+      value: 'M.S. CS',
+      label: 'Shanghai Ocean Univ. (2027)',
+      detail: 'B.Eng. Spatial Info · 128-Proc FUSE',
     },
   ],
 };
@@ -124,11 +124,11 @@ export function getProfile(lang: Lang): ProfileConfig {
   return {
     ...PROFILE,
     name: '杨昊 · Hao Yang',
-    role: 'WebGIS 空间信息与全栈系统工程师',
-    shortRole: 'WebGIS · 时序数据 · 全栈 SaaS',
-    headline: '专注高精度 WebGIS 工作台、实时数据平台与可验证的全栈 SaaS 工程。',
+    role: '二三维 WebGIS 与全栈系统工程师',
+    shortRole: '2D/3D WebGIS · 时序数据 · 全栈 SaaS',
+    headline: '专注高精度二三维 WebGIS 工作台、实时数据平台与可验证的全栈 SaaS 工程。',
     subheadline:
-      '计算机科学与技术硕士在读，IEEE SMC 2026 第一作者。长期面向科研机构、气候科技、物流与商业团队交付交互式 OpenLayers / MapLibre 地图应用、高密度时序监测平台及配套 Playwright 录屏 E2E 验收的全栈系统。',
+      '计算机科学与技术硕士在读，IEEE SMC 2026 第一作者。兼具 2021–2025 前 AI 时代纯手搓三维 CesiumJS、流体风场、WebSocket 与 PyTorch 扎实功底，以及 2026 AI 协同高效工程交付与 Playwright 自动化验收能力 —— 12 套真实前端已在线部署，开箱可测。',
     availabilityBadge: '开放远程合同与项目合作 · UTC+8 支持全球异步协作',
     location: '中国 · 上海',
     timezone: 'UTC+8 (北京时间)',
@@ -138,15 +138,15 @@ export function getProfile(lang: Lang): ProfileConfig {
       const zhMap: Record<PlatformLink['id'], { handle: string; note: string }> = {
         github: {
           handle: '@michaelyh126',
-          note: '个人主页、9 大实景演示前端入口与自动化测试实践',
+          note: '个人主页、12 套跨年代上线实景前端入口与科研基准',
         },
         upwork: {
           handle: '按小时或里程碑托管',
-          note: '适合海外 WebGIS、FastAPI 与 React 全栈合同项目',
+          note: '适合海外二三维 WebGIS、FastAPI 与 React 全栈合同项目',
         },
         fiverr: {
           handle: '标准化短周期交付',
-          note: 'OpenLayers 地图组件、GeoTIFF 切片流水线与 MVP 快启',
+          note: 'OpenLayers / CesiumJS 地图组件、GeoTIFF 切片流水线与 MVP 快启',
         },
         wellfound: {
           handle: '远程初创团队合作',
@@ -165,9 +165,9 @@ export function getProfile(lang: Lang): ProfileConfig {
     }),
     credibilityMetrics: [
       {
-        value: 'CS 硕士',
-        label: '上海海洋大学 (2027 届)',
-        detail: '本科：空间信息与数字技术',
+        value: '12 套实景',
+        label: '3 套前 AI + 9 套 AI 时代',
+        detail: '100% 合成演示数据 · 免登录直开',
       },
       {
         value: 'IEEE SMC ’26',
@@ -180,9 +180,9 @@ export function getProfile(lang: Lang): ProfileConfig {
         detail: 'TimescaleDB + FastAPI 时序平台',
       },
       {
-        value: '128 并发',
-        label: '作者 · ai-file-lock',
-        detail: 'FUSE / WinFsp 挂载并发保护',
+        value: 'CS 硕士',
+        label: '上海海洋大学 (2027 届)',
+        detail: '空间信息本科 · 128 并发 FUSE',
       },
     ],
   };
@@ -197,7 +197,7 @@ export function getPlatformHref(platform: PlatformLink): {
   }
   const subject = encodeURIComponent(`Remote Project Inquiry (${platform.label} / Direct)`);
   const body = encodeURIComponent(
-    `Hi Hao,\n\nI saw your portfolio and would like to discuss a project (WebGIS / Data Platform / Full-Stack SaaS).\n\nScope & timeline:\n`
+    `Hi Hao,\n\nI saw your portfolio and would like to discuss a project (2D/3D WebGIS / Data Platform / Full-Stack SaaS).\n\nScope & timeline:\n`
   );
   return {
     href: `mailto:${PROFILE.email}?subject=${subject}&body=${body}`,

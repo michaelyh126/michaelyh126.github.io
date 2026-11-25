@@ -70,9 +70,9 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
         </div>
 
         {/* Printable A4 CV Body */}
-        <div className="overflow-y-auto p-6 text-[13px] leading-relaxed sm:p-10 print:overflow-visible print:p-0">
+        <div className="overflow-y-auto p-6 text-[12.5px] leading-relaxed sm:p-9 print:overflow-visible print:p-0">
           {/* Header */}
-          <div className="border-b-2 border-slate-900 pb-4">
+          <div className="border-b-2 border-slate-900 pb-3.5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h1 className="font-display text-3xl font-bold tracking-tight text-slate-950">
                 {PROFILE.name}
@@ -81,7 +81,7 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
                 {PROFILE.role}
               </span>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-slate-600">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-slate-600">
               <span className="inline-flex items-center gap-1">
                 <Globe className="h-3.5 w-3.5 text-cyan-700" />
                 {PROFILE.location} ({PROFILE.timezone} · Remote Ready)
@@ -100,17 +100,17 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
                 className="inline-flex items-center gap-1 hover:text-cyan-700"
               >
                 <Github className="h-3.5 w-3.5 text-cyan-700" />
-                github.com/{PROFILE.handle}
+                github.com/{PROFILE.handle} · 12 Live Apps at michaelyh126.github.io
               </a>
             </div>
           </div>
 
           {/* Education */}
-          <div className="mt-4">
+          <div className="mt-3.5">
             <h2 className="border-b border-slate-300 pb-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
               Education
             </h2>
-            <div className="mt-2 space-y-2">
+            <div className="mt-2 space-y-1.5">
               <div className="flex flex-wrap justify-between gap-1">
                 <div>
                   <strong className="text-slate-950">Shanghai Ocean University</strong> — M.S. in
@@ -132,11 +132,11 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
           </div>
 
           {/* Publication */}
-          <div className="mt-4">
+          <div className="mt-3.5">
             <h2 className="border-b border-slate-300 pb-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
               Peer-Reviewed Publication
             </h2>
-            <div className="mt-2">
+            <div className="mt-1.5">
               <div className="flex flex-wrap justify-between gap-1">
                 <strong className="text-slate-950">
                   SBUPNet — Uncertainty-Guided Lightweight Network for Ultra-High-Resolution Semantic Segmentation
@@ -151,36 +151,35 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
                   throughput and ~35% lower training time &amp; peak VRAM than ISDNet).
                 </li>
                 <li>
-                  Conducted optimization mechanism analysis across Inria, DeepGlobe, CRAG, and
-                  MonuSeg comparing Full, Patch, Cross-source Mosaic, and downsampling strategies
-                  using gradient variance and mean-update utility.
+                  Benchmarked Full, Patch, Cross-source Mosaic, and downsampling strategies across
+                  Inria, DeepGlobe, CRAG, and MonuSeg via gradient variance and mean-update utility.
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Engineering Experience */}
-          <div className="mt-4">
+          {/* Engineering Experience (2026) */}
+          <div className="mt-3.5">
             <h2 className="border-b border-slate-300 pb-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
               Engineering Experience
             </h2>
-            <div className="mt-2">
+            <div className="mt-1.5">
               <div className="flex flex-wrap justify-between gap-1">
                 <strong className="text-slate-950">
                   East China Normal University (Research &amp; Data Platform) — Full-Stack &amp; WebGIS Engineer (Intern)
                 </strong>
-                <span className="font-mono text-xs text-slate-600">2025 – 2026</span>
+                <span className="font-mono text-xs text-slate-600">2026</span>
               </div>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-slate-700">
                 <li>
-                  <strong>Blue-Carbon WebGIS Platform:</strong> Built Vue 3 / FastAPI geospatial
-                  interfaces with station overlays and saltmarsh raster timelines; diagnosed legacy
-                  tile projection drift and rebuilt 8 yearly GeoTIFF pyramids in Web Mercator (Z6–Z11).
+                  <strong>Blue-Carbon &amp; WebGIS Platforms:</strong> Built Vue 3 / MapLibre &amp;
+                  React / OpenLayers 10 geospatial interfaces; fixed legacy tile projection drift
+                  and rebuilt 8 yearly GeoTIFF pyramids in Web Mercator (Z6–Z11).
                 </li>
                 <li>
                   <strong>Hydrological Telemetry Platform:</strong> Integrated NOAA, ISD, METAR, and
                   regional feeds across <strong>18 sources and ~25,000 stations</strong> on
-                  PostgreSQL / TimescaleDB; shipped analytical APIs and estuarine monitoring dashboards.
+                  PostgreSQL / TimescaleDB with 3-view monitoring dashboards.
                 </li>
                 <li>
                   <strong>Platform Automation &amp; DevOps:</strong> Audited 4,207 CMS articles and
@@ -191,52 +190,54 @@ export function ResumeModal({ open, onClose }: ResumeModalProps) {
             </div>
           </div>
 
-          {/* Open-Source & Commercial Projects */}
-          <div className="mt-4">
+          {/* Flagship Projects Across Two Eras */}
+          <div className="mt-3.5">
             <h2 className="border-b border-slate-300 pb-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
-              Selected Open-Source &amp; Commercial Projects
+              Selected Projects (Pre-AI Hand-Crafted 2021–2025 &amp; AI-Assisted 2026)
             </h2>
-            <ul className="mt-2 space-y-1.5 text-xs text-slate-700">
+            <ul className="mt-1.5 space-y-1 text-xs text-slate-700">
               <li>
-                <strong className="text-slate-950">salon-system (Multi-Terminal Retail SaaS)</strong>{' '}
-                — React 19, TypeScript, Express, MySQL, UniApp/H5, Caddy. Built 4 client apps (Admin,
-                Mobile POS, Customer H5, Stylist Workbench) with zero-fee QR reconciliation,
-                double-entry wallet ledger, RBAC audit logs, and 20 automated verification flows.
+                <strong className="text-slate-950">3D Marine Bathymetry Workbench (2024–2025 · Pre-AI, 132 Commits)</strong>{' '}
+                — Vue 3, TypeScript, CesiumJS 1.123 / Mars3D 3.8, ECharts, Turf. Built 3D terrain
+                slope/aspect, contours, seabed volume, trench excavation, cross-sections, and 10
+                passing marine shader effects.
               </li>
               <li>
-                <strong className="text-slate-950">ai-file-lock (FUSE / WinFsp Concurrency Guard, v1.0.3)</strong>{' '}
-                — Python, Node.js, libfuse3, WinFsp, SQLite, Tree-sitter. Transparent native mount
-                protecting editors &amp; AI agents from file races; verified under 128 concurrent
-                processes on Linux and native WinFsp 2.2 on Windows.
+                <strong className="text-slate-950">Tropical Cyclone Platform (2023–2024) &amp; SmartRFID IoT Monitor (2021 · Pre-AI)</strong>{' '}
+                — Vue 2, DataV 1080p, 950-particle Rankine wind Canvas; Spring Boot, WebSocket,
+                Redis &amp; real-time RFID anomaly alerting.
               </li>
               <li>
-                <strong className="text-slate-950">Enterprise DataHub &amp; Visual E2E QA Pipeline (qa-cli)</strong>{' '}
-                — React 19, Spring Boot 3.3 (Java 21), PostgreSQL, Redis, Playwright Core, FFmpeg.
-                Shipped RBAC approval workflows, hardened file management, and automated MP4 video QA
-                audits.
+                <strong className="text-slate-950">Multi-Terminal Salon SaaS &amp; OceanData Portal / Sound-AI (2026 · AI-Era)</strong>{' '}
+                — React 19, Three.js Globe, Express/MySQL, Spring Boot 3 (Java 21), custom Canvas
+                spectrograms, 0% Direct-QR double-entry ledger, and RBAC 403 security rails.
+              </li>
+              <li>
+                <strong className="text-slate-950">ai-file-lock (FUSE / WinFsp v1.0.3) &amp; qa-cli Visual QA (2026)</strong>{' '}
+                — Python, Node.js, libfuse3, WinFsp (128-process verified), Playwright Core + FFmpeg
+                automated MP4 regression proofs.
               </li>
             </ul>
           </div>
 
           {/* Technical Skills & Languages */}
-          <div className="mt-4">
+          <div className="mt-3.5">
             <h2 className="border-b border-slate-300 pb-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
               Technical Skills &amp; Certifications
             </h2>
-            <div className="mt-2 grid gap-1 text-xs text-slate-700">
+            <div className="mt-1.5 grid gap-1 text-xs text-slate-700">
               <div>
-                <strong className="text-slate-950">Geospatial &amp; Data:</strong> OpenLayers 10,
-                GeoTIFF / GDAL, Turf.js, EPSG:3857 / WGS84, PostGIS, PostgreSQL, TimescaleDB, ArcPy
+                <strong className="text-slate-950">2D/3D Geospatial &amp; Data:</strong> OpenLayers 10,
+                CesiumJS / Mars3D, MapLibre GL, Three.js, GeoTIFF / GDAL, Turf.js, PostGIS, TimescaleDB, ArcPy
               </div>
               <div>
-                <strong className="text-slate-950">Full-Stack &amp; AI:</strong> React 19, Vue 3,
-                TypeScript, Tailwind CSS, FastAPI, Express, Spring Boot 3 / Java 21, MySQL, Redis,
-                Python, PyTorch, MMSegmentation
+                <strong className="text-slate-950">Full-Stack &amp; AI:</strong> React 19, Vue 2/3,
+                TypeScript, Tailwind CSS, FastAPI, Express, Spring Boot 3 / Java 21, WebSocket,
+                PostgreSQL, MySQL, Redis, Python, PyTorch, MMSegmentation
               </div>
               <div>
-                <strong className="text-slate-950">DevOps, QA &amp; Language:</strong> Playwright
-                Core, FFmpeg, Linux, Nginx, systemd, Git, CET-6 English Certified (Async-friendly
-                technical communication)
+                <strong className="text-slate-950">Systems, QA &amp; Language:</strong> Playwright
+                Core, FFmpeg, Linux, Nginx, systemd, libfuse3 / WinFsp, CET-6 English Certified
               </div>
             </div>
           </div>

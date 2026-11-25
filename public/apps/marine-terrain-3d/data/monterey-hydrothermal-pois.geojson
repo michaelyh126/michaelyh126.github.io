@@ -1,0 +1,181 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-01",
+        "name": "Monterey Canyon Head Observatory",
+        "sector": "Upper Canyon",
+        "lng": -121.845,
+        "lat": 36.812,
+        "temp_c": 8.4,
+        "salinity_psu": 33.85,
+        "feature_type": "Benthic Observatory",
+        "depth_m": -872
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.845,
+          36.812,
+          -872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-02",
+        "name": "Axial Thalweg Deep Mooring",
+        "sector": "Central Canyon",
+        "lng": -121.95,
+        "lat": 36.795,
+        "temp_c": 3.9,
+        "salinity_psu": 34.42,
+        "feature_type": "CTD Mooring",
+        "depth_m": -1538
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.95,
+          36.795,
+          -1538
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-03",
+        "name": "Soquel Tributary Confluence",
+        "sector": "Northern Shelf",
+        "lng": -121.932,
+        "lat": 36.846,
+        "temp_c": 6.1,
+        "salinity_psu": 34.1,
+        "feature_type": "Canyon Junction",
+        "depth_m": -1064
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.932,
+          36.846,
+          -1064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-04",
+        "name": "Carmel Branch Slope Station",
+        "sector": "Southern Shelf",
+        "lng": -121.934,
+        "lat": 36.748,
+        "temp_c": 5.8,
+        "salinity_psu": 34.18,
+        "feature_type": "Sediment Trap",
+        "depth_m": -993
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.934,
+          36.748,
+          -993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-05",
+        "name": "Pacific Outer Seamount Crest",
+        "sector": "Outer Ridge",
+        "lng": -122.054,
+        "lat": 36.748,
+        "temp_c": 4.7,
+        "salinity_psu": 34.36,
+        "feature_type": "Seamount Peak",
+        "depth_m": -780
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.054,
+          36.748,
+          -780
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-06",
+        "name": "North Canyon Rim Cold Seep",
+        "sector": "Northern Flank",
+        "lng": -122.004,
+        "lat": 36.853,
+        "temp_c": 5.2,
+        "salinity_psu": 34.25,
+        "feature_type": "Cold Seep Vent",
+        "depth_m": -304
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.004,
+          36.853,
+          -304
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-07",
+        "name": "Monterey Shelf Break Node",
+        "sector": "Continental Shelf",
+        "lng": -121.882,
+        "lat": 36.774,
+        "temp_c": 7.9,
+        "salinity_psu": 33.92,
+        "feature_type": "ADCP Buoy",
+        "depth_m": -545
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -121.882,
+          36.774,
+          -545
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "MB-STA-08",
+        "name": "Abyssal Fan Meander Station",
+        "sector": "Lower Canyon",
+        "lng": -122.062,
+        "lat": 36.786,
+        "temp_c": 3.2,
+        "salinity_psu": 34.51,
+        "feature_type": "Turbidity Sensor",
+        "depth_m": -1049
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.062,
+          36.786,
+          -1049
+        ]
+      }
+    }
+  ]
+}
